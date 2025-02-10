@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use Illuminate\Http\JsonResponse;
 
 /**
  * @OA\Get(
@@ -24,10 +25,12 @@ use Illuminate\Http\Request;
 
 class HomeController extends Controller
 {
-    public function index(Request $request): \Illuminate\Http\JsonResponse
+    public function index(): JsonResponse
     {
         return response()->json([
             'status' => true,
+            'message' => 'Welcome to the Home API!'
         ]);
     }
+
 }
