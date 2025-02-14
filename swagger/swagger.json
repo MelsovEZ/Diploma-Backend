@@ -1,0 +1,22 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API Documentation",
+        "version": "1.0.0",
+        "title": "Diploma API"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/example": {
+            "get": {
+                "summary": "Example endpoint",
+                "responses": {
+                    "200": {
+                        "description": "Successful operation"
+                    }
+                }
+            }
+        }
+    }
+}
