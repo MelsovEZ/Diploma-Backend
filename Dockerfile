@@ -1,5 +1,5 @@
-# Используем PHP с Apache
-FROM php:8.2-apache
+# Используем PHP с Nginx и PHP-FPM
+FROM php:8.2-fpm
 
 # Устанавливаем системные зависимости
 RUN apt-get update && apt-get install -y \
@@ -10,6 +10,7 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
+    nginx \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql
 
@@ -24,8 +25,11 @@ RUN composer install --no-dev --optimize-autoloader
 # Настраиваем права доступа
 RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Настройка Nginx
+COPY ./nginx/default.conf /etc/nginx/sites-available/default
+
 # Открываем порты (80 для Laravel, 8080 для Swagger)
 EXPOSE 80 8080
 
-# Запускаем Apache
-CMD ["apache2-foreground"]
+# Запускаем Nginx и PHP-FPM
+CMD service nginx start && php-fpm
