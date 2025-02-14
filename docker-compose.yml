@@ -1,0 +1,50 @@
+version: "3.8"
+services:
+    app:
+        build: .
+        container_name: laravel_app
+        restart: always
+        volumes:
+            - .:/var/www/html
+        ports:
+            - "8000:80"
+        depends_on:
+            - db
+            - swagger
+        environment:
+            - APP_ENV=production
+            - APP_DEBUG=false
+            - APP_KEY=${APP_KEY}
+            - DB_CONNECTION=pgsql
+            - DB_HOST=dpg-cul13qbtq21c73bmqpqg-a.frankfurt-postgres.render.com
+            - DB_PORT=5432
+            - DB_DATABASE=diplomadb
+            - DB_USERNAME=is25
+            - DB_PASSWORD=inGPgSUgVLnspiWZp09PWnU3l7B59zCO
+
+    db:
+        image: postgres:13
+        container_name: laravel_db
+        restart: always
+        environment:
+            POSTGRES_DB: diplomadb
+            POSTGRES_USER: is25
+            POSTGRES_PASSWORD: inGPgSUgVLnspiWZp09PWnU3l7B59zCO
+        ports:
+            - "5432:5432"
+        volumes:
+            - dbdata:/var/lib/postgresql/data
+
+    swagger:
+        image: swaggerapi/swagger-ui
+        container_name: swagger_ui
+        restart: always
+        ports:
+            - "8080:8080"
+        environment:
+            SWAGGER_JSON: /swagger/swagger.json
+        volumes:
+            - ./swagger:/swagger
+
+volumes:
+    dbdata:
