@@ -1,24 +1,31 @@
-FROM php:8.2-fpm
+# Используем PHP с Apache
+FROM php:8.2-apache
 
-# Установка зависимостей
-RUN apt update && apt install -y \
+# Устанавливаем системные зависимости
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libjpeg-dev \
+    libfreetype6-dev \
+    zip \
+    unzip \
     git \
     curl \
-    libpng-dev \
-    libonig-dev \
-    libxml2-dev \
-    libpq-dev  # для PostgreSQL
+    && docker-php-ext-configure gd --with-freetype --with-jpeg \
+    && docker-php-ext-install gd pdo pdo_mysql
 
-RUN apt clean && rm -rf /var/lib/apt/lists/*
-
-# Устанавливаем необходимые расширения PHP
-RUN docker-php-ext-install pdo_mysql mbstring exif pcntl bcmath gd pdo_pgsql  # добавляем поддержку PostgreSQL
-
-# Копируем Composer
+# Устанавливаем Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
-# Указываем рабочую директорию
-WORKDIR /var/www
+# Устанавливаем зависимости Laravel
+WORKDIR /var/www/html
+COPY . .
+RUN composer install --no-dev --optimize-autoloader
 
-# Используем стандартного пользователя (обычно это root или www-data)
-USER www-data
+# Настраиваем права доступа
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
+# Открываем порты (80 для Laravel, 8080 для Swagger)
+EXPOSE 80 8080
+
+# Запускаем Apache
+CMD ["apache2-foreground"]
