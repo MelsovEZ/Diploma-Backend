@@ -1,13 +1,14 @@
 <IfModule mod_rewrite.c>
+    # Убираем возможные проблемы с индексами
     <IfModule mod_negotiation.c>
         Options -MultiViews -Indexes
     </IfModule>
-<IfModule mod_rewrite.c>
-    RewriteEngine On
-    RewriteRule ^(.*)$ public/$1 [L]
-</IfModule>
 
+    # Включаем перезапись
     RewriteEngine On
+
+    # Перенаправляем все запросы в папку public/
+    RewriteRule ^(.*)$ public/$1 [L]
 
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
@@ -22,7 +23,7 @@
     RewriteCond %{REQUEST_URI} (.+)/$
     RewriteRule ^ %1 [L,R=301]
 
-    # Send Requests To Front Controller...
+    # Отправляем все запросы в index.php (Front Controller)
     RewriteCond %{REQUEST_FILENAME} !-d
     RewriteCond %{REQUEST_FILENAME} !-f
     RewriteRule ^ index.php [L]
