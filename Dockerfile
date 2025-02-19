@@ -1,7 +1,7 @@
 # Используем PHP 8.2 с Apache
 FROM php:8.2-apache
 
-# Устанавливаем системные зависимости
+# Устанавливаем системные зависимости и PostgreSQL драйвер
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -10,8 +10,9 @@ RUN apt-get update && apt-get install -y \
     unzip \
     git \
     curl \
+    libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql
+    && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql
 
 # Устанавливаем Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -25,7 +26,7 @@ COPY . .
 # Устанавливаем зависимости Laravel
 RUN composer install --no-dev --optimize-autoloader
 
-# Настроим Apache для работы с Laravel
+# Настраиваем Apache для работы с Laravel
 RUN sed -i 's|/var/www/html|/var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
 # Добавляем ServerName для устранения предупреждений
