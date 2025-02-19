@@ -42,4 +42,5 @@ EXPOSE 80
 CMD php artisan config:cache && \
     php artisan route:cache && \
     php artisan migrate --force && \
+    php artisan l5-swagger:generate && \
     apache2-foreground
