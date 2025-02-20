@@ -29,7 +29,7 @@ class HomeController extends Controller
     {
         return response()->json([
             'status' => true,
-            'message' => 'Welcome to the Home API!'
+            'message' => 'Welcome to the Home API AHAHAHAHA!'
         ]);
     }
 
