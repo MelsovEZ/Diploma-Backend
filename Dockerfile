@@ -49,6 +49,7 @@ EXPOSE 80
 
 # Запускаем Laravel команды перед стартом Apache
 CMD php artisan config:cache && \
+    php artisan route:clear && \
     php artisan route:cache && \
     php artisan migrate --force && \
     php artisan l5-swagger:generate && \
