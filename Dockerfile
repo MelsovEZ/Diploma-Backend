@@ -26,6 +26,12 @@ COPY . .
 # Устанавливаем зависимости Laravel
 RUN composer install --no-dev --optimize-autoloader
 
+# Устанавливаем swagger-php для генерации документации
+RUN composer require --dev zircote/swagger-php
+
+# Генерация Swagger документации
+RUN php artisan l5-swagger:generate
+
 # Настраиваем Apache для работы с Laravel
 RUN sed -i 's|/var/www/html|/var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
@@ -33,9 +39,7 @@ RUN sed -i 's|/var/www/html|/var/www/html/public|' /etc/apache2/sites-available/
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Настраиваем права доступа
-RUN mkdir -p storage/api-docs && \
-    chown -R www-data:www-data storage api-docs bootstrap/cache && \
-    chmod -R 775 storage api-docs bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Открываем порт 80 для Apache
 EXPOSE 80
