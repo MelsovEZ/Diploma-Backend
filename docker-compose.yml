@@ -42,9 +42,10 @@ services:
         ports:
             - "8080:8080"
         environment:
-            SWAGGER_JSON: /swagger/swagger.json
+            SWAGGER_JSON: /var/www/html/storage/api-docs/swagger.json
         volumes:
-            - ./swagger:/swagger
+            - .:/var/www/html
+
 
 volumes:
     dbdata:

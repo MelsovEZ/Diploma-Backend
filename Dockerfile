@@ -33,7 +33,9 @@ RUN sed -i 's|/var/www/html|/var/www/html/public|' /etc/apache2/sites-available/
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Настраиваем права доступа
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN mkdir -p storage/api-docs && \
+    chown -R www-data:www-data storage api-docs bootstrap/cache && \
+    chmod -R 775 storage api-docs bootstrap/cache
 
 # Открываем порт 80 для Apache
 EXPOSE 80
@@ -42,5 +44,5 @@ EXPOSE 80
 CMD php artisan config:cache && \
     php artisan route:cache && \
     php artisan migrate --force && \
-    php artisan l5-swagger:generate && \  # Генерация Swagger документации
+    php artisan l5-swagger:generate && \
     apache2-foreground
