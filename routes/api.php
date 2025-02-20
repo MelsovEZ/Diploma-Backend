@@ -20,4 +20,4 @@ Route::get('/run-command', function () {
 });
 
 
-Route::get('/home', [\App\Http\Controllers\api\HomeController::class, 'index'])->middleware('auth:sanctum');
+Route::get('/home', [\App\Http\Controllers\api\HomeController::class, 'index']);
