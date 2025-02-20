@@ -20,4 +20,4 @@ Route::get('/run-command', function () {
 });
 
 
-Route::get('/home', [\App\Http\Controllers\api\HomeController::class, 'index']);
+Route::get('/home', [\App\Http\Controllers\Api\HomeController::class, 'index']);
