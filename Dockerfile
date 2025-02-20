@@ -32,6 +32,9 @@ RUN composer require --dev zircote/swagger-php
 # Генерация Swagger документации
 RUN php artisan l5-swagger:generate
 
+# Создаем символическую ссылку на Swagger JSON в public/docs
+RUN ln -s /var/www/html/storage/api-docs /var/www/html/public/docs
+
 # Настраиваем Apache для работы с Laravel
 RUN sed -i 's|/var/www/html|/var/www/html/public|' /etc/apache2/sites-available/000-default.conf
 
