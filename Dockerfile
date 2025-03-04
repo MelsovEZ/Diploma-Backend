@@ -37,6 +37,9 @@ RUN mkdir -p /var/www/html/storage/api-docs && \
 RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
     chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
+# Публикуем файлы Swagger UI
+RUN php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider" --tag=public --force
+
 # Генерация Swagger документации
 RUN php artisan l5-swagger:generate
 
@@ -65,6 +68,7 @@ CMD php artisan config:cache && \
     php artisan route:clear && \
     php artisan route:cache && \
     php artisan migrate --force && \
+    php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --tag=public --force && \
     php artisan l5-swagger:generate && \
     chmod -R 775 /var/www/html/storage/api-docs && \
     chown -R www-data:www-data /var/www/html/storage/api-docs && \
