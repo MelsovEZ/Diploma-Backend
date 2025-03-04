@@ -12,7 +12,8 @@ RUN apt-get update && apt-get install -y \
     curl \
     libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql
+    && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql \
+    && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Устанавливаем Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -20,14 +21,15 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Устанавливаем рабочую директорию
 WORKDIR /var/www/html
 
-# Копируем файлы Laravel
-COPY . .
-
-# Устанавливаем зависимости Laravel
+# Копируем файлы composer перед основными файлами для кэширования зависимостей
+COPY composer.json composer.lock ./
 RUN composer install --no-dev --optimize-autoloader
 
+# Копируем все файлы проекта
+COPY . .
+
 # Устанавливаем swagger-php для генерации документации
-RUN composer require --dev zircote/swagger-php
+RUN composer require --dev zircote/swagger-php && rm -rf /root/.composer/cache
 
 # Генерация Swagger документации
 RUN php artisan l5-swagger:generate
@@ -42,15 +44,16 @@ RUN sed -i 's|/var/www/html|/var/www/html/public|' /etc/apache2/sites-available/
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Настраиваем права доступа
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Открываем порт 80 для Apache
 EXPOSE 80
 
-# Запускаем Laravel команды перед стартом Apache
+# Запускаем Laravel команды перед стартом Apache, ожидая базу данных
 CMD php artisan config:cache && \
     php artisan route:clear && \
     php artisan route:cache && \
-    php artisan migrate --force && \
+    until php artisan migrate --force; do echo "Ожидание БД..."; sleep 3; done && \
     php artisan l5-swagger:generate && \
     apache2-foreground
