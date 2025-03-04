@@ -37,9 +37,8 @@ RUN chmod -R 775 /var/www/html/storage && \
     chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Создаем символическую ссылку на Swagger JSON в public/docs
-RUN rm -rf /var/www/html/public/docs && \
-    mkdir -p /var/www/html/storage/api-docs && \
-    ln -s /var/www/html/storage/api-docs /var/www/html/public/docs
+RUN mkdir -p /var/www/html/public/docs && \
+    cp /var/www/html/public/storage/api-docs.json /var/www/html/public/docs/api-docs.json
 
 
 # Настраиваем Apache для работы с Laravel

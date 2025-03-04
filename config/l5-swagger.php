@@ -28,12 +28,12 @@ return [
                 /*
                  * File name of the generated json documentation file
                  */
-                'docs_json' => 'storage/api-docs/api-docs.json',
+                'docs_json' => 'docs/api-docs.json',
 
                 /*
                  * File name of the generated YAML documentation file
                  */
-                'docs_yaml' => 'storage/api-docs/api-docs.yaml',
+                'docs_yaml' => 'docs/api-docs.yaml',
 
                 /*
                  * Set this to `json` or `yaml` to determine which documentation file to use in UI
