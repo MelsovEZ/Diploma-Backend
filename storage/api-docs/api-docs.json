@@ -5,6 +5,92 @@
         "version": "1.0.0"
     },
     "paths": {
+        "/api/home": {
+            "get": {
+                "tags": [
+                    "Home"
+                ],
+                "summary": "Home API",
+                "description": "Description of API.",
+                "operationId": "d3d10dbd7d035d621451268ef123ce3b",
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Welcome to API"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/user": {
+            "get": {
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get authenticated user",
+                "operationId": "3671108ef08ef7ba13008db3dfd0a947",
+                "responses": {
+                    "200": {
+                        "description": "Successful response",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "example": "first"
+                                        },
+                                        "surname": {
+                                            "type": "string",
+                                            "example": null,
+                                            "nullable": true
+                                        },
+                                        "status": {
+                                            "type": "string",
+                                            "example": "user"
+                                        },
+                                        "email": {
+                                            "type": "string",
+                                            "example": "first@mail.ru"
+                                        },
+                                        "created_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-11T10:36:03.000000Z"
+                                        },
+                                        "updated_at": {
+                                            "type": "string",
+                                            "format": "date-time",
+                                            "example": "2025-02-11T10:36:03.000000Z"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthenticated"
+                    }
+                },
+                "security": [
+                    {
+                        "sanctum": []
+                    }
+                ]
+            }
+        },
         "/api/login": {
             "post": {
                 "tags": [
@@ -229,34 +315,6 @@
                     }
                 }
             }
-        },
-        "/api/home": {
-            "get": {
-                "tags": [
-                    "Home"
-                ],
-                "summary": "Home API",
-                "description": "Description of API.",
-                "operationId": "e24c2edee502144a181390a70116dea0",
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "content": {
-                            "application/json": {
-                                "schema": {
-                                    "properties": {
-                                        "message": {
-                                            "type": "string",
-                                            "example": "Welcome to API"
-                                        }
-                                    },
-                                    "type": "object"
-                                }
-                            }
-                        }
-                    }
-                }
-            }
         }
     },
     "components": {
@@ -272,12 +330,16 @@
     },
     "tags": [
         {
-            "name": "Auth",
-            "description": "Auth"
-        },
-        {
             "name": "Home",
             "description": "Home"
+        },
+        {
+            "name": "User",
+            "description": "User"
+        },
+        {
+            "name": "Auth",
+            "description": "Auth"
         }
     ]
 }
