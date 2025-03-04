@@ -23,8 +23,7 @@ return [
                 /*
                 * Edit to set path where swagger ui assets should be stored
                 */
-                'swagger_ui_assets_path' => env('L5_SWAGGER_UI_ASSETS_PATH', 'swagger-ui'),
-
+                'swagger_ui_assets_path' => env('L5_SWAGGER_UI_ASSETS_PATH', 'vendor/swagger-api/swagger-ui/dist/'),
 
                 /*
                  * File name of the generated json documentation file
@@ -82,8 +81,7 @@ return [
             /*
              * Absolute path to location where parsed annotations will be stored
              */
-            'docs' => storage_path('api-docs'),
-
+            'docs' => public_path('storage/api-docs'),
 
             /*
              * Absolute path to directory where to export views
