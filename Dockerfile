@@ -29,19 +29,18 @@ RUN composer install --no-dev --optimize-autoloader
 # Устанавливаем swagger-php для генерации документации
 RUN composer require --dev zircote/swagger-php
 
-# Создаем папку для Swagger API-документации
+# Убеждаемся, что папки `public/storage` и `public/docs` существуют
 RUN mkdir -p /var/www/html/public/storage && \
-    mkdir -p /var/www/html/public/docs && \
-    mkdir -p /var/www/html/storage/api-docs
+    mkdir -p /var/www/html/public/docs
 
 # Настраиваем права доступа
-RUN chmod -R 775 /var/www/html/storage /var/www/html/public/storage /var/www/html/public/docs && \
-    chown -R www-data:www-data /var/www/html/storage /var/www/html/public/storage /var/www/html/public/docs /var/www/html/bootstrap/cache
+RUN chmod -R 775 /var/www/html/public/storage /var/www/html/public/docs && \
+    chown -R www-data:www-data /var/www/html/public/storage /var/www/html/public/docs /var/www/html/bootstrap/cache
 
 # Генерация Swagger документации
 RUN php artisan l5-swagger:generate
 
-# Копируем Swagger JSON в public/docs
+# Переносим Swagger JSON в `public/docs`
 RUN cp /var/www/html/public/storage/api-docs.json /var/www/html/public/docs/api-docs.json || true
 
 # Настраиваем Apache для работы с Laravel
