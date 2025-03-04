@@ -12,8 +12,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     libpq-dev \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+    && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql
 
 # Устанавливаем Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -21,15 +20,14 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 # Устанавливаем рабочую директорию
 WORKDIR /var/www/html
 
-# Копируем файлы composer перед основными файлами для кэширования зависимостей
-COPY composer.json composer.lock ./
-RUN composer install --no-dev --optimize-autoloader
-
-# Копируем все файлы проекта
+# Копируем файлы Laravel
 COPY . .
 
+# Устанавливаем зависимости Laravel
+RUN composer install --no-dev --optimize-autoloader
+
 # Устанавливаем swagger-php для генерации документации
-RUN composer require --dev zircote/swagger-php && rm -rf /root/.composer/cache
+RUN composer require --dev zircote/swagger-php
 
 # Генерация Swagger документации
 RUN php artisan l5-swagger:generate
@@ -44,16 +42,15 @@ RUN sed -i 's|/var/www/html|/var/www/html/public|' /etc/apache2/sites-available/
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
 
 # Настраиваем права доступа
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache && \
-    chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache
+RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Открываем порт 80 для Apache
 EXPOSE 80
 
-# Запускаем Laravel команды перед стартом Apache, ожидая базу данных
+# Запускаем Laravel команды перед стартом Apache
 CMD php artisan config:cache && \
     php artisan route:clear && \
     php artisan route:cache && \
-    until php artisan migrate --force; do echo "Ожидание БД..."; sleep 3; done && \
+    php artisan migrate --force && \
     php artisan l5-swagger:generate && \
     apache2-foreground
