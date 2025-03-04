@@ -32,19 +32,20 @@ RUN composer require --dev zircote/swagger-php
 # Генерация Swagger документации
 RUN php artisan l5-swagger:generate
 
+# Настраиваем права доступа для хранения API-документации
+RUN chmod -R 775 /var/www/html/storage && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
+
 # Создаем символическую ссылку на Swagger JSON в public/docs
-RUN ln -s /var/www/html/storage/api-docs /var/www/html/public/docs
+RUN rm -rf /var/www/html/public/docs && \
+    ln -s /var/www/html/storage/api-docs /var/www/html/public/docs
 
 # Настраиваем Apache для работы с Laravel
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf \
     && a2enmod rewrite
 
-
 # Добавляем ServerName для устранения предупреждений
 RUN echo "ServerName localhost" >> /etc/apache2/apache2.conf
-
-# Настраиваем права доступа
-RUN chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Открываем порт 80 для Apache
 EXPOSE 80
