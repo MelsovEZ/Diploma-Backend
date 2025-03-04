@@ -34,9 +34,8 @@ RUN mkdir -p /var/www/html/public/storage && \
     mkdir -p /var/www/html/public/docs
 
 # Настраиваем права доступа
-RUN chmod -R 775 /var/www/html/public/storage /var/www/html/bootstrap/cache && \
-    chown -R www-data:www-data /var/www/html/public/storage /var/www/html/bootstrap/cache
-
+RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
+    chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Генерация Swagger документации
 RUN php artisan l5-swagger:generate
