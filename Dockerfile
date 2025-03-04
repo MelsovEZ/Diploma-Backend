@@ -1,8 +1,6 @@
 # Используем PHP 8.2 с Apache
 FROM php:8.2-apache
 
-RUN echo "FORCE REBUILD"
-
 # Устанавливаем системные зависимости и PostgreSQL драйвер
 RUN apt-get update && apt-get install -y \
     libpng-dev \
