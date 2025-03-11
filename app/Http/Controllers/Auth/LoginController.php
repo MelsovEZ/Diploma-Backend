@@ -2,11 +2,11 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\Auth\LoginRequest;
 use App\Models\User;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 
 class LoginController extends Controller
 {
@@ -57,19 +57,8 @@ class LoginController extends Controller
      * )
      */
 
-    public function login(Request $request): JsonResponse
+    public function login(LoginRequest $request): JsonResponse
     {
-        $validator = Validator::make($request->all(), [
-            'email' => 'required|string|email',
-            'password' => 'required|string|min:8',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'error' => $validator->errors()
-            ], 400);
-        }
-
         $user = User::where('email', $request->email)->first();
 
         if (!$user || !Hash::check($request->password, $user->password)) {

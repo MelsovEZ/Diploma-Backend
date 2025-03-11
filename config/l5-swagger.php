@@ -28,7 +28,7 @@ return [
                 /*
                  * File name of the generated json documentation file
                  */
-                'docs_json' => 'storage/api-docs.json',
+                'docs_json' => 'api-docs.json',
 
                 /*
                  * File name of the generated YAML documentation file
@@ -81,7 +81,7 @@ return [
             /*
              * Absolute path to location where parsed annotations will be stored
              */
-            'docs' => storage_path('api-docs'),
+            'docs' => public_path('storage/api-docs'),
 
             /*
              * Absolute path to directory where to export views
@@ -99,6 +99,8 @@ return [
              * `scanOptions.exclude` overwrites this
              */
             'excludes' => [],
+            'secure' => true,
+
         ],
 
         'scanOptions' => [
@@ -248,7 +250,7 @@ return [
          * Edit to trust the proxy's ip address - needed for AWS Load Balancer
          * string[]
          */
-        'proxy' => false,
+        'proxy' => true,
 
         /*
          * Configs plugin allows to fetch external configs instead of passing them to SwaggerUIBundle.

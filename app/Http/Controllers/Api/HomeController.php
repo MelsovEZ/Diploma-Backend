@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers\api;
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
+use App\Models\User;
 
 /**
  * @OA\Get(
@@ -27,10 +28,11 @@ class HomeController extends Controller
 {
     public function index(): JsonResponse
     {
+        $users = User::all();
+
         return response()->json([
             'status' => true,
-            'message' => 'Welcome to the Home API!'
+            'users' => $users
         ]);
     }
-
 }
