@@ -7,6 +7,9 @@
     # Включаем перезапись
     RewriteEngine On
 
+    # Перенаправляем /api/documentation на Swagger UI
+    RewriteRule ^api/documentation$ swagger-ui/index.html [L,R=302]
+
     # Перенаправляем все запросы в папку public/
     RewriteRule ^(.*)$ public/$1 [L]
 
