@@ -39,10 +39,8 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
     chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Публикуем файлы Swagger UI
-RUN php artisan vendor:publish --provider "L5Swagger\L5SwaggerServiceProvider" --tag=public --force
-
-# Копируем Swagger UI из vendor в public
-RUN cp -r vendor/swagger-api/swagger-ui/dist/* /var/www/html/public/swagger-ui/
+RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --tag=config
+RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --tag=public --force
 
 # Генерация Swagger документации
 RUN php artisan l5-swagger:generate
@@ -54,8 +52,8 @@ RUN ls -la /var/www/html/storage/api-docs
 RUN cp /var/www/html/storage/api-docs/api-docs.json /var/www/html/public/storage/api-docs.json || true
 
 # Устанавливаем правильные права на Swagger JSON
-RUN chmod -R 775 /var/www/html/storage/api-docs /var/www/html/public/swagger-ui && \
-    chown -R www-data:www-data /var/www/html/storage/api-docs /var/www/html/public/swagger-ui
+RUN chmod -R 775 /var/www/html/storage/api-docs /var/www/html/public/swagger-ui /var/www/html/public/storage && \
+    chown -R www-data:www-data /var/www/html/storage/api-docs /var/www/html/public/swagger-ui /var/www/html/public/storage
 
 # Настраиваем Apache для работы с Laravel
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf \
