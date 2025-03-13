@@ -31,7 +31,7 @@ RUN composer require --dev zircote/swagger-php
 
 # Убеждаемся, что папки `storage/api-docs` и `public/swagger-ui` существуют
 RUN mkdir -p /var/www/html/storage/api-docs && \
-    mkdir -p /var/www/html/public/storage && \
+    mkdir -p /var/www/html/public/api-docs && \
     mkdir -p /var/www/html/public/swagger-ui
 
 # Настраиваем права доступа
@@ -48,12 +48,12 @@ RUN php artisan l5-swagger:generate
 # Проверяем наличие api-docs.json
 RUN ls -la /var/www/html/storage/api-docs
 
-# Переносим Swagger JSON в `public/storage`
-RUN cp /var/www/html/storage/api-docs/api-docs.json /var/www/html/public/storage/api-docs.json || true
+# Переносим Swagger JSON в `public/api-docs`
+RUN cp /var/www/html/storage/api-docs/api-docs.json /var/www/html/public/api-docs/api-docs.json || true
 
 # Устанавливаем правильные права на Swagger JSON
-RUN chmod -R 775 /var/www/html/storage/api-docs /var/www/html/public/swagger-ui /var/www/html/public/storage && \
-    chown -R www-data:www-data /var/www/html/storage/api-docs /var/www/html/public/swagger-ui /var/www/html/public/storage
+RUN chmod -R 775 /var/www/html/storage/api-docs /var/www/html/public/swagger-ui /var/www/html/public/api-docs && \
+    chown -R www-data:www-data /var/www/html/storage/api-docs /var/www/html/public/swagger-ui /var/www/html/public/api-docs
 
 # Настраиваем Apache для работы с Laravel
 RUN sed -i 's|DocumentRoot /var/www/html|DocumentRoot /var/www/html/public|' /etc/apache2/sites-available/000-default.conf \
@@ -75,7 +75,7 @@ CMD php artisan config:clear && \
     php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --tag=public --force && \
     php artisan l5-swagger:generate && \
     cp -r vendor/swagger-api/swagger-ui/dist/* /var/www/html/public/swagger-ui/ && \
-    chmod -R 775 /var/www/html/storage/api-docs /var/www/html/public/swagger-ui && \
-    chown -R www-data:www-data /var/www/html/storage/api-docs /var/www/html/public/swagger-ui && \
-    cp /var/www/html/storage/api-docs/api-docs.json /var/www/html/public/storage/api-docs.json || true && \
+    chmod -R 775 /var/www/html/storage/api-docs /var/www/html/public/swagger-ui /var/www/html/public/api-docs && \
+    chown -R www-data:www-data /var/www/html/storage/api-docs /var/www/html/public/swagger-ui /var/www/html/public/api-docs && \
+    cp /var/www/html/storage/api-docs/api-docs.json /var/www/html/public/api-docs/api-docs.json || true && \
     apache2-foreground
