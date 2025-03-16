@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\CategoryController;
+use App\Http\Controllers\CommentController;
 
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
@@ -26,6 +27,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/categories/{category}', [CategoryController::class, 'update']);
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy']);
 });
+
+Route::get('/comments/{problem_id}', [CommentController::class, 'index']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/comments', [CommentController::class, 'store']);
+    Route::delete('/comments/{comment_id}', [CommentController::class, 'destroy']);
+    Route::put('/comments/{comment_id}', [CommentController::class, 'update']);
+});
+
 
 
 Route::get('/home', [\App\Http\Controllers\Api\HomeController::class, 'index']);
