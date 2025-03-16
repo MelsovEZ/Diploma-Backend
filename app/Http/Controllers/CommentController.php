@@ -155,7 +155,7 @@ class CommentController extends Controller
      *     @OA\Response(response=404, description="Comment not found")
      * )
      */
-    
+
     public function destroy($id): JsonResponse
     {
         $comment = Comment::findOrFail($id);
