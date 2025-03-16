@@ -23,7 +23,7 @@ class LoginController extends Controller
      *     path="/api/login",
      *     tags={"Auth"},
      *     summary="User Login",
-     *     description="Login a user and return a token",
+     *     description="Login a user and return an access token",
      *     operationId="loginUser",
      *     @OA\RequestBody(
      *         required=true,
@@ -37,7 +37,8 @@ class LoginController extends Controller
      *         response=200,
      *         description="Login successful",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Login successful")
+     *             @OA\Property(property="message", type="string", example="Login successful"),
+     *             @OA\Property(property="token", type="string", example="1|abc123...")
      *         )
      *     ),
      *     @OA\Response(

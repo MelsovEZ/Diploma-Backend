@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Hash;
  *     path="/api/register",
  *     tags={"Auth"},
  *     summary="User Registration",
- *     description="Register a new user",
+ *     description="Register a new user and return an access token",
  *     operationId="registerUser",
  *     @OA\RequestBody(
  *         required=true,
@@ -33,7 +33,8 @@ use Illuminate\Support\Facades\Hash;
  *             @OA\Property(property="user", type="object",
  *                 @OA\Property(property="name", type="string", example="John Doe"),
  *                 @OA\Property(property="email", type="string", format="email", example="john.doe@example.com")
- *             )
+ *             ),
+ *             @OA\Property(property="token", type="string", example="1|abc123...")
  *         )
  *     ),
  *     @OA\Response(
@@ -46,6 +47,7 @@ use Illuminate\Support\Facades\Hash;
  * )
  */
 
+
 class RegisterController extends Controller
 {
     public function register(RegisterRequest $request): JsonResponse
@@ -56,6 +58,14 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        return response()->json(['message' => 'User registered successfully', 'user' => $user], 201);
+        // Создаем токен сразу после регистрации
+        $token = $user->createToken('YourAppName')->plainTextToken;
+
+        return response()->json([
+            'message' => 'User registered successfully',
+            'user' => $user,
+            'token' => $token
+        ], 201);
     }
+
 }
