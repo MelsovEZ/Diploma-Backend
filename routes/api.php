@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
+use Illuminate\Support\Facades\Storage;
 
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
@@ -35,6 +36,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/comments/{comment_id}', [CommentController::class, 'update']);
 });
 
+Route::post('/upload', function (Request $request) {
+    $request->validate([
+        'file' => 'required|file|max:10240',
+    ]);
+
+    $path = $request->file('file')->store('uploads', 's3');
+
+    return response()->json([
+        'message' => 'File uploaded successfully!',
+        'path' => Storage::disk('s3')->url($path),
+    ]);
+});
 
 
 Route::get('/home', [\App\Http\Controllers\Api\HomeController::class, 'index']);
