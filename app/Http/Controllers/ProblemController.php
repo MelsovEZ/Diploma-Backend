@@ -3,9 +3,13 @@
 namespace App\Http\Controllers;
 
 use App\Models\Problem;
+use App\Models\ProblemPhoto;
 use Illuminate\Http\Request;
 use App\Http\Requests\ProblemRequest;
 use App\Http\Requests\ProblemUpdateRequest;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Http\JsonResponse;
 
 /**
  * @OA\Tag(name="Problems")
@@ -15,7 +19,7 @@ class ProblemController extends Controller
     /**
      * @OA\Get(
      *     path="/problems",
-     *     summary="Get all problems",
+     *     summary="Get all problems with their photos",
      *     tags={"Problems"},
      *     @OA\Response(
      *         response=200,
@@ -24,26 +28,34 @@ class ProblemController extends Controller
      *             type="array",
      *             @OA\Items(
      *                 type="object",
-     *                 @OA\Property(property="problem_id", type="integer", example=6),
-     *                 @OA\Property(property="user_id", type="integer", example=2),
-     *                 @OA\Property(property="title", type="string", example="Second Problem"),
-     *                 @OA\Property(property="description", type="string", example="This is a test problem"),
+     *                 @OA\Property(property="problem_id", type="integer", example=31),
+     *                 @OA\Property(property="user_id", type="integer", example=1),
+     *                 @OA\Property(property="title", type="string", example="With photo"),
+     *                 @OA\Property(property="description", type="string", example="desc"),
      *                 @OA\Property(property="category_id", type="integer", example=1),
      *                 @OA\Property(property="status", type="string", enum={"pending", "in_progress", "done", "declined"}, example="pending"),
-     *                 @OA\Property(property="location_lat", type="string", example="51.1657000"),
-     *                 @OA\Property(property="location_lng", type="string", example="10.4515000"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-03-11T13:52:04.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-03-11T13:52:04.000000Z")
+     *                 @OA\Property(property="location_lat", type="number", format="float", example=59.333),
+     *                 @OA\Property(property="location_lng", type="number", format="float", example=20.333),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-03-19T14:44:17.000000Z"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-03-19T14:44:17.000000Z"),
+     *                 @OA\Property(
+     *                     property="photo_urls",
+     *                     type="array",
+     *                     @OA\Items(
+     *                         type="string",
+     *                         example="https://s3.fr-par.scw.cloud/diploma-bucket/problems/User_1/problem_31/a7HJRy3SJpAySlBz5buSU78lsB4phc0dpfu9IjiC.jpg"
+     *                     )
+     *                 )
      *             )
      *         )
      *     )
      * )
      */
-    public function index()
-    {
-        return Problem::all();
-    }
 
+    public function index(): Collection
+    {
+        return Problem::with('photos')->get();
+    }
 
     /**
      * @OA\Post(
@@ -52,13 +64,22 @@ class ProblemController extends Controller
      *     tags={"Problems"},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             required={"title", "description", "category_id", "location_lat", "location_lng"},
-     *             @OA\Property(property="title", type="string", example="Broken streetlight"),
-     *             @OA\Property(property="description", type="string", example="The streetlight is broken on 5th avenue."),
-     *             @OA\Property(property="category_id", type="integer", example=1),
-     *             @OA\Property(property="location_lat", type="number", format="float", example=40.7128),
-     *             @OA\Property(property="location_lng", type="number", format="float", example=-74.0060)
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 required={"title", "description", "category_id", "location_lat", "location_lng"},
+     *                 @OA\Property(property="title", type="string", example="Broken streetlight"),
+     *                 @OA\Property(property="description", type="string", example="The streetlight is broken on 5th avenue."),
+     *                 @OA\Property(property="category_id", type="integer", example=1),
+     *                 @OA\Property(property="location_lat", type="number", format="float", example=40.7128),
+     *                 @OA\Property(property="location_lng", type="number", format="float", example=-74.0060),
+     *                 @OA\Property(
+     *                     property="photos[]",
+     *                     type="array",
+     *                     @OA\Items(type="string", format="binary"),
+     *                     description="Optional multiple photo uploads (1 to 5 images)"
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -67,7 +88,9 @@ class ProblemController extends Controller
      *     )
      * )
      */
-    public function store(ProblemRequest $request): \Illuminate\Http\JsonResponse
+
+
+    public function store(ProblemRequest $request): JsonResponse
     {
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
@@ -75,16 +98,34 @@ class ProblemController extends Controller
 
         $problem = Problem::create($validated);
 
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $photo) {
+                if ($photo->isValid()) {
+                    $userId = auth()->id();
+                    $problemId = $problem->problem_id;
+                    $path = $photo->store("problems/User_{$userId}/problem_{$problemId}", 's3');
+                    Storage::disk('s3')->setVisibility($path, 'public');
+                    $photoUrl = Storage::disk('s3')->url($path);
+
+                    ProblemPhoto::create([
+                        'problem_id' => $problem->problem_id,
+                        'photo_url' => $photoUrl,
+                    ]);
+                }
+            }
+        }
+
         return response()->json([
             'status' => true,
             'problem' => $problem
         ], 201);
     }
 
+
     /**
      * @OA\Get(
      *     path="/problems/{id}",
-     *     summary="Get a specific problem",
+     *     summary="Get a specific problem with its photos",
      *     tags={"Problems"},
      *     @OA\Parameter(
      *         name="id",
@@ -99,8 +140,15 @@ class ProblemController extends Controller
      *     )
      * )
      */
-    public function show(Problem $problem)
+    public function show(Problem $problem): Problem
     {
+        $problem->load(['photos' => function ($query) {
+            $query->select('problem_id', 'photo_url');
+        }]);
+
+        $problem['photo_urls'] = $problem->photos->pluck('photo_url');
+        unset($problem['photos']);
+
         return $problem;
     }
 
@@ -129,7 +177,7 @@ class ProblemController extends Controller
      *     )
      * )
      */
-    public function update(ProblemUpdateRequest $request, Problem $problem)
+    public function update(ProblemUpdateRequest $request, Problem $problem): JsonResponse
     {
         if ($problem->user_id !== auth()->id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
@@ -165,13 +213,25 @@ class ProblemController extends Controller
      *     )
      * )
      */
-    public function destroy(Problem $problem)
+    public function destroy(Problem $problem): JsonResponse
     {
         if ($problem->user_id !== auth()->id()) {
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        $photos = ProblemPhoto::where('problem_id', $problem->problem_id)->get();
+        foreach ($photos as $photo) {
+            $filePath = ltrim(parse_url($photo->photo_url, PHP_URL_PATH), '/');
+            $filePath = str_replace("diploma-bucket/", "", $filePath);
+            if (Storage::disk('s3')->exists($filePath)) {
+                Storage::disk('s3')->delete($filePath);
+            }
+            $photo->delete();
+        }
+
+        // Удаляем проблему
         $problem->delete();
+
         return response()->json(['message' => 'Problem deleted successfully']);
     }
 }

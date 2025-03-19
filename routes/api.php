@@ -9,6 +9,15 @@ use App\Http\Controllers\CommentController;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 
+
+
+Log::info('Incoming request', [
+    'method' => request()->method(),
+    'url' => request()->fullUrl(),
+    'headers' => request()->headers->all(),
+    'body' => request()->all(),
+]);
+
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout']);
