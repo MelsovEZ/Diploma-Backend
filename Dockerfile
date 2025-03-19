@@ -11,8 +11,10 @@ RUN apt-get update && apt-get install -y \
     git \
     curl \
     libpq-dev \
+    ca-certificates \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql
+    && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql \
+    && update-ca-certificates
 
 # Устанавливаем Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
@@ -22,6 +24,9 @@ WORKDIR /var/www/html
 
 # Копируем файлы Laravel
 COPY . .
+
+# Устанавливаем пакет для работы с S3 и MinIO
+RUN composer require league/flysystem-aws-s3-v3
 
 # Устанавливаем зависимости Laravel
 RUN composer install --no-dev --optimize-autoloader
@@ -39,8 +44,8 @@ RUN chmod -R 775 /var/www/html/storage /var/www/html/bootstrap/cache && \
     chown -R www-data:www-data /var/www/html/storage /var/www/html/bootstrap/cache
 
 # Публикуем файлы Swagger UI
-RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --tag=config
-RUN php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --tag=public --force
+RUN php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=config
+RUN php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=public --force
 
 # Генерация Swagger документации
 RUN php artisan l5-swagger:generate
@@ -72,7 +77,7 @@ CMD php artisan config:clear && \
     php artisan route:clear && \
     php artisan route:cache && \
     php artisan migrate --force && \
-    php artisan vendor:publish --provider="L5Swagger\L5SwaggerServiceProvider" --tag=public --force && \
+    php artisan vendor:publish --provider="L5Swagger\\L5SwaggerServiceProvider" --tag=public --force && \
     php artisan l5-swagger:generate && \
     cp -r vendor/swagger-api/swagger-ui/dist/* /var/www/html/public/swagger-ui/ && \
     chmod -R 775 /var/www/html/storage/api-docs /var/www/html/public/swagger-ui /var/www/html/public/api-docs && \
