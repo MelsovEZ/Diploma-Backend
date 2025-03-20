@@ -6,6 +6,17 @@ use Illuminate\Support\Facades\Artisan;
 use App\Http\Controllers\ProblemController;
 use App\Http\Controllers\CategoryController;
 use App\Http\Controllers\CommentController;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Log;
+
+
+
+Log::info('Incoming request', [
+    'method' => request()->method(),
+    'url' => request()->fullUrl(),
+    'headers' => request()->headers->all(),
+    'body' => request()->all(),
+]);
 
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
@@ -36,5 +47,60 @@ Route::middleware('auth:sanctum')->group(function () {
 });
 
 
+Route::post('/upload', function (Request $request) {
+    try {
+        $request->validate([
+            'file' => 'required|file|max:10240',
+        ]);
+
+        // Проверка, что файл успешно получен
+        if (!$request->hasFile('file') || !$request->file('file')->isValid()) {
+            Log::error('Invalid file in request');
+            return response()->json(['error' => 'Invalid file uploaded'], 400);
+        }
+
+        Log::info('File received', [
+            'original_name' => $request->file('file')->getClientOriginalName(),
+            'mime_type' => $request->file('file')->getMimeType(),
+            'size' => $request->file('file')->getSize()
+        ]);
+
+        // Попробуем получить ошибку
+        try {
+            $path = $request->file('file')->store('uploads', 's3');
+            Log::info('Upload attempt result', ['path' => $path]);
+        } catch (\Exception $e) {
+            Log::error('S3 upload exception', [
+                'message' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            return response()->json(['error' => 'S3 upload exception: ' . $e->getMessage()], 500);
+        }
+
+        if (!$path) {
+            Log::error('Upload failed with no exception');
+            return response()->json(['error' => 'File upload failed'], 500);
+        }
+
+        // Остальной код без изменений
+        if (!Storage::disk('s3')->exists($path)) {
+            return response()->json(['error' => 'File not found after upload'], 500);
+        }
+
+        $fileUrl = Storage::disk('s3')->url($path);
+        Log::info('File uploaded successfully', ['path' => $path, 'url' => $fileUrl]);
+
+        return response()->json([
+            'message' => 'File uploaded successfully!',
+            'path' => $fileUrl,
+        ]);
+    } catch (\Exception $e) {
+        Log::error('Global exception', [
+            'message' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return response()->json(['error' => 'An error occurred: ' . $e->getMessage()], 500);
+    }
+});
 
 Route::get('/home', [\App\Http\Controllers\Api\HomeController::class, 'index']);
