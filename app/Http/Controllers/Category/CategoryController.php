@@ -1,10 +1,11 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Category;
 
-use App\Models\Category;
-use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use App\Models\Category\Category;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 /**
  * @OA\Tag(name="Categories")

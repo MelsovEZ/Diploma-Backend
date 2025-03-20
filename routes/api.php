@@ -1,14 +1,12 @@
 <?php
 
+use App\Http\Controllers\Category\CategoryController;
+use App\Http\Controllers\Comment\CommentController;
+use App\Http\Controllers\Problem\ProblemController;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Route;
-use Illuminate\Support\Facades\Artisan;
-use App\Http\Controllers\ProblemController;
-use App\Http\Controllers\CategoryController;
-use App\Http\Controllers\CommentController;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
-
+use Illuminate\Support\Facades\Route;
+use Illuminate\Support\Facades\Storage;
 
 
 Log::info('Incoming request', [

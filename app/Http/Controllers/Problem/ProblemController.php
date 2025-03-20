@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Problem;
 
-use App\Models\Problem;
-use App\Models\ProblemPhoto;
-use Illuminate\Http\Request;
-use App\Http\Requests\ProblemRequest;
-use App\Http\Requests\ProblemUpdateRequest;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Database\Eloquent\Collection;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Problem\ProblemRequest;
+use App\Http\Requests\Problem\ProblemUpdateRequest;
+use App\Http\Resources\Problem\ProblemResource;
+use App\Models\Problem\Problem;
+use App\Models\Problem\ProblemPhoto;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * @OA\Tag(name="Problems")
@@ -52,9 +53,9 @@ class ProblemController extends Controller
      * )
      */
 
-    public function index(): Collection
+    public function index(): AnonymousResourceCollection
     {
-        return Problem::with('photos')->get();
+        return ProblemResource::collection(Problem::with('photos:problem_id,photo_url')->get());
     }
 
     /**
@@ -140,17 +141,11 @@ class ProblemController extends Controller
      *     )
      * )
      */
-    public function show(Problem $problem): Problem
+    public function show(Problem $problem): ProblemResource
     {
-        $problem->load(['photos' => function ($query) {
-            $query->select('problem_id', 'photo_url');
-        }]);
-
-        $problem['photo_urls'] = $problem->photos->pluck('photo_url');
-        unset($problem['photos']);
-
-        return $problem;
+        return new ProblemResource($problem);
     }
+
 
     /**
      * @OA\Put(
