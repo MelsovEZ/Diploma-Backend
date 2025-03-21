@@ -58,7 +58,6 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
-        // Создаем токен сразу после регистрации
         $token = $user->createToken('YourAppName')->plainTextToken;
 
         return response()->json([

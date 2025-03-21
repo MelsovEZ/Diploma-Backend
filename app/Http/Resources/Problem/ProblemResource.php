@@ -21,6 +21,8 @@ class ProblemResource extends JsonResource
             'created_at' => $this->created_at,
             'updated_at' => $this->updated_at,
             'photo_urls' => $this->photos->pluck('photo_url'),
+            'likes_count' => $this->likes()->count(),
+            'comments_count' => $this->comments()->count(),
         ];
     }
 }

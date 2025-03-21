@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Problem;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Problem\ProblemIndexRequest;
 use App\Http\Requests\Problem\ProblemRequest;
 use App\Http\Requests\Problem\ProblemUpdateRequest;
 use App\Http\Resources\Problem\ProblemResource;
@@ -20,43 +21,90 @@ class ProblemController extends Controller
     /**
      * @OA\Get(
      *     path="/problems",
-     *     summary="Get all problems with their photos",
+     *     summary="Get paginated list of problems with filtering and sorting",
      *     tags={"Problems"},
+     *     @OA\Parameter(
+     *         name="page",
+     *         in="query",
+     *         description="Page number for pagination",
+     *         required=false,
+     *         @OA\Schema(type="integer", example=1)
+     *     ),
+     *     @OA\Parameter(
+     *         name="category_id[]",
+     *         in="query",
+     *         description="Filter by category IDs (array of integers)",
+     *         required=false,
+     *         @OA\Schema(type="array", @OA\Items(type="integer"), example={1,2})
+     *     ),
+     *     @OA\Parameter(
+     *         name="sort",
+     *         in="query",
+     *         description="Sort order by created_at (asc or desc)",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"asc", "desc"}, example="desc")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
      *         @OA\JsonContent(
-     *             type="array",
-     *             @OA\Items(
-     *                 type="object",
-     *                 @OA\Property(property="problem_id", type="integer", example=31),
-     *                 @OA\Property(property="user_id", type="integer", example=1),
-     *                 @OA\Property(property="title", type="string", example="With photo"),
-     *                 @OA\Property(property="description", type="string", example="desc"),
-     *                 @OA\Property(property="category_id", type="integer", example=1),
-     *                 @OA\Property(property="status", type="string", enum={"pending", "in_progress", "done", "declined"}, example="pending"),
-     *                 @OA\Property(property="location_lat", type="number", format="float", example=59.333),
-     *                 @OA\Property(property="location_lng", type="number", format="float", example=20.333),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-03-19T14:44:17.000000Z"),
-     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-03-19T14:44:17.000000Z"),
-     *                 @OA\Property(
-     *                     property="photo_urls",
-     *                     type="array",
-     *                     @OA\Items(
-     *                         type="string",
-     *                         example="https://s3.fr-par.scw.cloud/diploma-bucket/problems/User_1/problem_31/a7HJRy3SJpAySlBz5buSU78lsB4phc0dpfu9IjiC.jpg"
+     *             type="object",
+     *             @OA\Property(property="data", type="array",
+     *                 @OA\Items(
+     *                     @OA\Property(property="problem_id", type="integer", example=31),
+     *                     @OA\Property(property="user_id", type="integer", example=1),
+     *                     @OA\Property(property="title", type="string", example="With photo"),
+     *                     @OA\Property(property="description", type="string", example="desc"),
+     *                     @OA\Property(property="category_id", type="integer", example=1),
+     *                     @OA\Property(property="status", type="string", enum={"pending", "in_progress", "done", "declined"}, example="pending"),
+     *                     @OA\Property(property="location_lat", type="number", format="float", example=59.333),
+     *                     @OA\Property(property="location_lng", type="number", format="float", example=20.333),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-03-19T14:44:17.000000Z"),
+     *                     @OA\Property(
+     *                         property="photo_urls",
+     *                         type="array",
+     *                         @OA\Items(
+     *                             type="string",
+     *                             example="https://s3.fr-par.scw.cloud/diploma-bucket/problems/User_1/problem_31/a7HJRy3SJpAySlBz5buSU78lsB4phc0dpfu9IjiC.jpg"
+     *                         )
      *                     )
      *                 )
+     *             ),
+     *             @OA\Property(property="links", type="object",
+     *                 @OA\Property(property="first", type="string", example="http://localhost:8000/api/problems?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://localhost:8000/api/problems?page=5"),
+     *                 @OA\Property(property="prev", type="string", nullable=true, example=null),
+     *                 @OA\Property(property="next", type="string", nullable=true, example="http://localhost:8000/api/problems?page=2")
+     *             ),
+     *             @OA\Property(property="meta", type="object",
+     *                 @OA\Property(property="current_page", type="integer", example=1),
+     *                 @OA\Property(property="from", type="integer", example=1),
+     *                 @OA\Property(property="last_page", type="integer", example=5),
+     *                 @OA\Property(property="per_page", type="integer", example=10),
+     *                 @OA\Property(property="to", type="integer", example=10),
+     *                 @OA\Property(property="total", type="integer", example=50)
      *             )
      *         )
      *     )
      * )
      */
 
-    public function index(): AnonymousResourceCollection
+
+    public function index(ProblemIndexRequest $request): AnonymousResourceCollection
     {
-        return ProblemResource::collection(Problem::with('photos:problem_id,photo_url')->get());
+        $query = Problem::with('photos:problem_id,photo_url')
+            ->select(['problem_id', 'user_id', 'title', 'description', 'category_id', 'status', 'location_lat', 'location_lng', 'created_at']);
+
+        if ($categories = $request->input('category_id')) {
+            $query->whereIn('category_id', $categories);
+        }
+
+        return ProblemResource::collection(
+            $query->orderBy('created_at', $request->input('sort', 'desc'))->paginate(10)
+        );
     }
+
+
 
     /**
      * @OA\Post(
@@ -224,7 +272,6 @@ class ProblemController extends Controller
             $photo->delete();
         }
 
-        // Удаляем проблему
         $problem->delete();
 
         return response()->json(['message' => 'Problem deleted successfully']);
