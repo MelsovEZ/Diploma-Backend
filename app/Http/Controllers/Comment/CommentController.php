@@ -1,15 +1,16 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Comment;
 
-use App\Http\Requests\Comments\CommentRequest;
-use App\Http\Requests\Comments\CommentUpdateRequest;
-use App\Models\Comment;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Comment\CommentRequest;
+use App\Http\Requests\Comment\CommentUpdateRequest;
+use App\Models\Comment\Comment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
 
 /**
- * @OA\Tag(name="Comments")
+ * @OA\Tag(name="Comment")
  */
 class CommentController extends Controller
 {
@@ -17,7 +18,7 @@ class CommentController extends Controller
      * @OA\Get(
      *     path="/api/comments/{problem_id}",
      *     summary="Get all comments for a problem",
-     *     tags={"Comments"},
+     *     tags={"Comment"},
      *     @OA\Parameter(
      *         name="problem_id",
      *         in="path",
@@ -52,7 +53,7 @@ class CommentController extends Controller
      * @OA\Post(
      *     path="/api/comments",
      *     summary="Create a new comment",
-     *     tags={"Comments"},
+     *     tags={"Comment"},
      *     security={{ "sanctum": {} }},
      *     @OA\RequestBody(
      *         required=true,
@@ -84,7 +85,7 @@ class CommentController extends Controller
      * @OA\Put(
      *     path="/api/comments/{id}",
      *     summary="Update a comment",
-     *     tags={"Comments"},
+     *     tags={"Comment"},
      *     security={{ "sanctum": {} }},
      *     @OA\Parameter(
      *         name="id",
@@ -134,7 +135,7 @@ class CommentController extends Controller
      * @OA\Delete(
      *     path="/api/comments/{id}",
      *     summary="Delete a comment",
-     *     tags={"Comments"},
+     *     tags={"Comment"},
      *     security={{ "sanctum": {} }},
      *     @OA\Parameter(
      *         name="id",
