@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Comment;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Comment\CommentRequest;
 use App\Http\Requests\Comment\CommentUpdateRequest;
+use App\Http\Resources\Comment\CommentResource;
 use App\Models\Comment\Comment;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Auth;
@@ -46,7 +47,9 @@ class CommentController extends Controller
 
     public function index($problem_id): JsonResponse
     {
-        return response()->json(Comment::where('problem_id', $problem_id)->get());
+        return response()->json(
+            CommentResource::collection(Comment::with('user:id,name,surname')->where('problem_id', $problem_id)->get())
+        );
     }
 
     /**
