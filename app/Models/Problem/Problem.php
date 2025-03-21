@@ -23,6 +23,10 @@ class Problem extends Model
         'location_lat',
         'location_lng',
     ];
+    public function photos(): HasMany
+    {
+        return $this->hasMany(ProblemPhoto::class, 'problem_id', 'problem_id');
+    }
 
     public function likes(): HasMany
     {
