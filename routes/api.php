@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\Like\LikeController;
@@ -23,15 +24,15 @@ Route::get('/user', [\App\Http\Controllers\Api\UserController::class, 'getUser']
 
 Route::get('/problems', [ProblemController::class, 'index']);
 Route::get('/problems/{problem_id}/likes', [LikeController::class, 'getProblemLikes']);
-
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/problems', [ProblemController::class, 'store']);
-    Route::get('/problems/{problem}', [ProblemController::class, 'show']);
-    Route::put('/problems/{problem}', [ProblemController::class, 'update']);
-    Route::delete('/problems/{problem}', [ProblemController::class, 'destroy']);
+    Route::get('/problems/{problem_id}', [ProblemController::class, 'show']);
+    Route::put('/problems/{problem_id}', [ProblemController::class, 'update']);
+    Route::delete('/problems/{problem_id}', [ProblemController::class, 'destroy']);
     Route::post('/problems/{problem_id}/like', [LikeController::class, 'toggleLike']);
-});
 
+    Route::patch('/problems/{problem_id}/status', [ProblemController::class, 'updateStatus']);
+});
 
 Route::get('/categories', [CategoryController::class, 'index']);
 Route::middleware('auth:sanctum')->group(function () {
@@ -47,5 +48,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/comments/{comment_id}', [CommentController::class, 'destroy']);
     Route::put('/comments/{comment_id}', [CommentController::class, 'update']);
 });
+
+
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
+    Route::post('/users/{user_id}/make-moderator', [AdminController::class, 'makeModerator']);
+    Route::post('/users/{user_id}/remove-moderator', [AdminController::class, 'removeModerator']);
+});
+
 
 Route::get('/home', [\App\Http\Controllers\Api\HomeController::class, 'index']);
