@@ -10,6 +10,7 @@ use App\Http\Resources\Problem\ProblemResource;
 use App\Models\Problem\Problem;
 use App\Models\Problem\ProblemPhoto;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Illuminate\Support\Facades\Storage;
 
@@ -36,6 +37,13 @@ class ProblemController extends Controller
      *         description="Filter by category IDs (array of integers)",
      *         required=false,
      *         @OA\Schema(type="array", @OA\Items(type="integer"), example={1,2})
+     *     ),
+     *     @OA\Parameter(
+     *         name="status",
+     *         in="query",
+     *         description="Filter by problem status",
+     *         required=false,
+     *         @OA\Schema(type="string", enum={"pending", "in_progress", "done", "declined"}, example="pending")
      *     ),
      *     @OA\Parameter(
      *         name="sort",
@@ -99,10 +107,15 @@ class ProblemController extends Controller
             $query->whereIn('category_id', $categories);
         }
 
+        if ($status = $request->input('status')) {
+            $query->where('status', $status);
+        }
+
         return ProblemResource::collection(
             $query->orderBy('created_at', $request->input('sort', 'desc'))->paginate(10)
         );
     }
+
 
 
 
@@ -276,4 +289,28 @@ class ProblemController extends Controller
 
         return response()->json(['message' => 'Problem deleted successfully']);
     }
+
+
+
+    public function updateStatus(Request $request, $problem_id): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (!in_array($user->status, ['admin', 'moderator'])) {
+            return response()->json(['message' => 'Forbidden'], 403);
+        }
+
+        $problem = Problem::findOrFail($problem_id);
+        $status = $request->input('status');
+
+        if (!in_array($status, ['in_progress', 'declined', 'done'])) {
+            return response()->json(['message' => 'Invalid status'], 400);
+        }
+
+        $problem->status = $status;
+        $problem->save();
+
+        return response()->json(['message' => 'Status updated successfully']);
+    }
+
 }
