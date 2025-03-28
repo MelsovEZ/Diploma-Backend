@@ -308,7 +308,7 @@ class ProblemController extends Controller
      * )
      */
 
-    
+
     public function deleteProblemPhotos(Problem $problem): void
     {
         $photos = ProblemPhoto::where('problem_id', $problem->problem_id)->get();
