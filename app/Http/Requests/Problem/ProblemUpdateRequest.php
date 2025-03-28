@@ -19,6 +19,8 @@ class ProblemUpdateRequest extends FormRequest
             'category_id' => 'sometimes|exists:categories,id',
             'location_lat' => 'sometimes|numeric',
             'location_lng' => 'sometimes|numeric',
+            'photos' => 'nullable|array|max:5',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
     }
 }

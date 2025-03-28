@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
+
 /*
 Log::info('Incoming request', [
     'method' => request()->method(),
@@ -17,6 +18,7 @@ Log::info('Incoming request', [
     'body' => request()->all(),
 ]);
 */
+
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout']);
@@ -26,16 +28,17 @@ Route::get('/problems', [ProblemController::class, 'index']);
 Route::get('/problems/{problem_id}/likes', [LikeController::class, 'getProblemLikes']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/problems', [ProblemController::class, 'store']);
-    Route::get('/problems/{problem_id}', [ProblemController::class, 'show']);
-    Route::put('/problems/{problem_id}', [ProblemController::class, 'update']);
-    Route::delete('/problems/{problem_id}', [ProblemController::class, 'destroy']);
+    Route::get('/problems/{problem}', [ProblemController::class, 'show']);
+    Route::post('/problems/{problem}', [ProblemController::class, 'update']);
+    Route::delete('/problems/{problem}', [ProblemController::class, 'destroy']);
     Route::post('/problems/{problem_id}/like', [LikeController::class, 'toggleLike']);
+    Route::post('/problems/{problem}/delete-photos', [ProblemController::class, 'deleteProblemPhotos']);
 
     Route::patch('/problems/{problem_id}/status', [ProblemController::class, 'updateStatus']);
 });
 
 Route::get('/categories', [CategoryController::class, 'index']);
-Route::middleware('auth:sanctum')->group(function () {
+Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/categories', [CategoryController::class, 'store']);
     Route::get('/categories/{category}', [CategoryController::class, 'show']);
     Route::put('/categories/{category}', [CategoryController::class, 'update']);
@@ -49,11 +52,9 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('/comments/{comment_id}', [CommentController::class, 'update']);
 });
 
-
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/users/{user_id}/make-moderator', [AdminController::class, 'makeModerator']);
     Route::post('/users/{user_id}/remove-moderator', [AdminController::class, 'removeModerator']);
 });
-
 
 Route::get('/home', [\App\Http\Controllers\Api\HomeController::class, 'index']);

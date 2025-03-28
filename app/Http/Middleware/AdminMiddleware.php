@@ -10,11 +10,25 @@ class AdminMiddleware
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (!auth()->check() || auth()->user()->status !== 'admin') {
-            return response()->json(['message' => 'Forbidden'], 403);
+        $user = auth()->user();
+
+        if (!$user) {
+            return response()->json(['message' => 'Unauthorized'], 401);
         }
 
+        if ($user->status === 'admin') {
+            return $next($request);
+        }
 
-        return $next($request);
+        if ($user->status === 'moderator' && !$this->isModeratorManagementRoute($request)) {
+            return $next($request);
+        }
+
+        return response()->json(['message' => 'You don`t have permission!'], 403);
+    }
+
+    private function isModeratorManagementRoute(Request $request): bool
+    {
+        return $request->is('api/users/*/make-moderator') || $request->is('api/users/*/remove-moderator');
     }
 }
