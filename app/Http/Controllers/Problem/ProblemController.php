@@ -97,7 +97,6 @@ class ProblemController extends Controller
      * )
      */
 
-
     public function index(ProblemIndexRequest $request): AnonymousResourceCollection
     {
         $query = Problem::with('photos:problem_id,photo_url')
@@ -107,23 +106,19 @@ class ProblemController extends Controller
             $query->whereIn('category_id', $categories);
         }
 
-        if ($status = $request->input('status')) {
-            $query->where('status', $status);
-        }
+        $query->where('status', $request->input('status', 'in_progress'));
 
         return ProblemResource::collection(
             $query->orderBy('created_at', $request->input('sort', 'desc'))->paginate(10)
         );
     }
 
-
-
-
     /**
      * @OA\Post(
      *     path="/problems",
      *     summary="Create a new problem",
      *     tags={"Problems"},
+     *     security={{"sanctum":{}}},
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\MediaType(
@@ -144,13 +139,10 @@ class ProblemController extends Controller
      *             )
      *         )
      *     ),
-     *     @OA\Response(
-     *         response=201,
-     *         description="Problem created successfully"
-     *     )
+     *     @OA\Response(response=201, description="Problem created successfully"),
+     *     @OA\Response(response=403, description="Unauthorized")
      * )
      */
-
 
     public function store(ProblemRequest $request): JsonResponse
     {
@@ -183,7 +175,6 @@ class ProblemController extends Controller
         ], 201);
     }
 
-
     /**
      * @OA\Get(
      *     path="/problems/{id}",
@@ -207,12 +198,12 @@ class ProblemController extends Controller
         return new ProblemResource($problem);
     }
 
-
     /**
      * @OA\Put(
      *     path="/problems/{id}",
      *     summary="Update a problem",
      *     tags={"Problems"},
+     *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -227,12 +218,15 @@ class ProblemController extends Controller
      *             @OA\Property(property="description", type="string", example="Updated description")
      *         )
      *     ),
+     *     @OA\Response(response=200, description="Problem updated successfully"),
      *     @OA\Response(
-     *         response=200,
-     *         description="Problem updated successfully"
+     *         response=403,
+     *         description="Unauthorized or problem is not pending"
      *     )
      * )
      */
+
+
     public function update(ProblemUpdateRequest $request, Problem $problem): JsonResponse
     {
         if ($problem->user_id !== auth()->id()) {
@@ -245,10 +239,27 @@ class ProblemController extends Controller
 
         $problem->update($request->validated());
 
-        return response()->json([
-            'status' => true,
-            'problem' => $problem
-        ]);
+        if ($request->hasFile('photos')) {
+            $this->deleteProblemPhotos($problem);
+
+            foreach ($request->file('photos') as $photo) {
+                if ($photo->isValid()) {
+                    $userId = auth()->id();
+                    $problemId = $problem->problem_id;
+                    $path = Storage::disk('s3')->put("problems/User_{$userId}/problem_{$problemId}", $photo, 'public');
+
+                    $photoUrl = Storage::disk('s3')->url($path);
+
+                    ProblemPhoto::create([
+                        'problem_id' => $problem->problem_id,
+                        'photo_url' => $photoUrl,
+                    ]);
+                }
+            }
+        }
+
+
+        return response()->json(['status' => true, 'problem' => $problem]);
     }
 
     /**
@@ -256,6 +267,7 @@ class ProblemController extends Controller
      *     path="/problems/{id}",
      *     summary="Delete a problem",
      *     tags={"Problems"},
+     *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
@@ -263,10 +275,8 @@ class ProblemController extends Controller
      *         description="ID of the problem",
      *         @OA\Schema(type="integer")
      *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Problem deleted successfully"
-     *     )
+     *     @OA\Response(response=200, description="Problem deleted successfully"),
+     *     @OA\Response(response=403, description="Unauthorized")
      * )
      */
     public function destroy(Problem $problem): JsonResponse
@@ -275,6 +285,32 @@ class ProblemController extends Controller
             return response()->json(['message' => 'Unauthorized'], 403);
         }
 
+        $this->deleteProblemPhotos($problem);
+        $problem->delete();
+
+        return response()->json(['message' => 'Problem deleted successfully']);
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/problems/{problem_id}/delete-photos",
+     *     summary="Delete all photos associated with a problem",
+     *     tags={"Problems"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="problem_id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\Response(response=403, description="Unauthorized"),
+     *     @OA\Response(response=404, description="Problem not found")
+     * )
+     */
+
+
+    public function deleteProblemPhotos(Problem $problem): void
+    {
         $photos = ProblemPhoto::where('problem_id', $problem->problem_id)->get();
         foreach ($photos as $photo) {
             $filePath = ltrim(parse_url($photo->photo_url, PHP_URL_PATH), '/');
@@ -284,12 +320,39 @@ class ProblemController extends Controller
             }
             $photo->delete();
         }
-
-        $problem->delete();
-
-        return response()->json(['message' => 'Problem deleted successfully']);
     }
 
+    /**
+     * @OA\Patch(
+     *     path="/api/problems/{problem_id}/status",
+     *     summary="Update the status of a problem",
+     *     tags={"Problems"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="problem_id",
+     *         in="path",
+     *         required=true,
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\JsonContent(
+     *             required={"status"},
+     *             @OA\Property(property="status", type="string", enum={"in_progress", "declined", "done"})
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Status updated successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Status updated successfully")
+     *         )
+     *     ),
+     *     @OA\Response(response=400, description="Invalid status"),
+     *     @OA\Response(response=403, description="Forbidden"),
+     *     @OA\Response(response=404, description="Problem not found")
+     * )
+     */
 
 
     public function updateStatus(Request $request, $problem_id): JsonResponse
