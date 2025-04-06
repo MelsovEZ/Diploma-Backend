@@ -7,7 +7,6 @@ use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Hash;
 
-
 /**
  * @OA\Post(
  *     path="/api/register",
@@ -46,8 +45,6 @@ use Illuminate\Support\Facades\Hash;
  *     )
  * )
  */
-
-
 class RegisterController extends Controller
 {
     public function register(RegisterRequest $request): JsonResponse
@@ -58,6 +55,14 @@ class RegisterController extends Controller
             'password' => Hash::make($request->password),
         ]);
 
+        $user->sendEmailVerificationNotification();
+
+        if (!$user->hasVerifiedEmail()) {
+            return response()->json([
+                'message' => 'Please verify your email before logging in.'
+            ], 400);
+        }
+
         $token = $user->createToken('YourAppName')->plainTextToken;
 
         return response()->json([
@@ -66,5 +71,4 @@ class RegisterController extends Controller
             'token' => $token
         ], 201);
     }
-
 }

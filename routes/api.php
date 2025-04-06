@@ -1,6 +1,8 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Auth\VerificationController;
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\Like\LikeController;
@@ -21,8 +23,9 @@ Log::info('Incoming request', [
 
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
-Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout']);
+Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout'])->middleware('auth:sanctum');
 Route::get('/user', [\App\Http\Controllers\Api\UserController::class, 'getUser'])->middleware('auth:sanctum');
+
 
 Route::get('/problems', [ProblemController::class, 'index']);
 Route::get('/problems/{problem_id}/likes', [LikeController::class, 'getProblemLikes']);
@@ -55,6 +58,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/users/{user_id}/make-moderator', [AdminController::class, 'makeModerator']);
     Route::post('/users/{user_id}/remove-moderator', [AdminController::class, 'removeModerator']);
+
+    Route::get('/dashboard', [DashboardController::class, 'index']);
 });
 
 Route::get('/home', [\App\Http\Controllers\Api\HomeController::class, 'index']);
