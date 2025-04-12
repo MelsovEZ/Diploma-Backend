@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\Like\LikeController;
@@ -22,7 +23,13 @@ Log::info('Incoming request', [
 Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout']);
-Route::get('/user', [\App\Http\Controllers\Api\UserController::class, 'getUser'])->middleware('auth:sanctum');
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/user', [UserController::class, 'getUser']);
+    Route::post('/user', [UserController::class, 'updateUser']);
+    Route::delete('/user/photo', [UserController::class, 'deletePhoto']);
+});
+
 
 Route::get('/problems', [ProblemController::class, 'index']);
 Route::get('/problems/{problem_id}/likes', [LikeController::class, 'getProblemLikes']);
