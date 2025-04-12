@@ -106,7 +106,14 @@ class ProblemController extends Controller
             $query->whereIn('category_id', $categories);
         }
 
-        $query->where('status', $request->input('status', 'in_progress'));
+        $user = auth()->user();
+        if ($user->status === 'admin' || $user->status === 'moderator') {
+            if ($status = $request->input('status')) {
+                $query->where('status', $status);
+            }
+        } else {
+            $query->whereIn('status', ['in_progress', 'done']);
+        }
 
         return ProblemResource::collection(
             $query->orderBy('created_at', $request->input('sort', 'desc'))->paginate(10)
@@ -195,7 +202,7 @@ class ProblemController extends Controller
      */
     public function show(Problem $problem): ProblemResource
     {
-        return new ProblemResource($problem);
+        return new ProblemResource($problem->load('photos'));
     }
 
     /**
@@ -309,18 +316,15 @@ class ProblemController extends Controller
      */
 
 
-    public function deleteProblemPhotos(Problem $problem): void
+    private function deleteProblemPhotos(Problem $problem): void
     {
         $photos = ProblemPhoto::where('problem_id', $problem->problem_id)->get();
         foreach ($photos as $photo) {
-            $filePath = ltrim(parse_url($photo->photo_url, PHP_URL_PATH), '/');
-            $filePath = str_replace("diploma-bucket/", "", $filePath);
-            if (Storage::disk('s3')->exists($filePath)) {
-                Storage::disk('s3')->delete($filePath);
-            }
+            Storage::disk('s3')->delete($photo->photo_url);
             $photo->delete();
         }
     }
+
 
     /**
      * @OA\Patch(
