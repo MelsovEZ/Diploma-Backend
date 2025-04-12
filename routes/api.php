@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Api\UserController;
+use App\Http\Controllers\Api\UserProblemController;
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\Like\LikeController;
@@ -28,6 +29,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'getUser']);
     Route::post('/user', [UserController::class, 'updateUser']);
     Route::delete('/user/photo', [UserController::class, 'deletePhoto']);
+
+    Route::get('/user/problems', [UserProblemController::class, 'getUserProblems']);
 });
 
 

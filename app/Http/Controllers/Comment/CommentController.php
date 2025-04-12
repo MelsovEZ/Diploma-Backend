@@ -33,36 +33,51 @@ class CommentController extends Controller
      *         @OA\JsonContent(
      *             type="array",
      *             @OA\Items(
-     *                 @OA\Property(property="id", type="integer", example=1),
-     *                 @OA\Property(property="user_id", type="integer", example=2),
-     *                 @OA\Property(property="problem_id", type="integer", example=3),
-     *                 @OA\Property(property="text", type="string", example="This is a comment"),
-     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-03-14T10:00:00.000Z"),
-     *                  @OA\Property(property="updated_at", type="string", format="date-time", example="null")
+     *                 @OA\Property(property="id", type="integer", example=8),
+     *                 @OA\Property(property="user_id", type="integer", example=1),
+     *                 @OA\Property(property="name", type="string", example="Assanali"),
+     *                 @OA\Property(property="surname", type="string", nullable=true, example=null),
+     *                 @OA\Property(property="photo_url", type="string", nullable=true, example=null),
+     *                 @OA\Property(property="problem_id", type="integer", example=35),
+     *                 @OA\Property(property="text", type="string", example="haha"),
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-04-12 15:49:55"),
+     *                 @OA\Property(property="updated_at", type="string", nullable=true, format="date-time", example="null")
      *             )
      *         )
      *     )
      * )
      */
 
+
     public function index($problem_id): JsonResponse
     {
-        return response()->json(
-            CommentResource::collection(Comment::with('user:id,name,surname')->where('problem_id', $problem_id)->get())
-        );
+        $comments = Comment::where('problem_id', $problem_id)
+            ->with('user:id,name,surname,photo_url')
+            ->get();
+
+        return response()->json(CommentResource::collection($comments));
     }
+
+
 
     /**
      * @OA\Post(
      *     path="/api/comments",
      *     summary="Create a new comment",
      *     tags={"Comment"},
-     *     security={{ "sanctum": {} }},
+     *     security={{"sanctum":{}}},
+     *      @OA\Parameter(
+     *          name="id",
+     *          in="path",
+     *          required=true,
+     *          @OA\Schema(type="integer"),
+     *          description="Comment ID"
+     *      ),
      *     @OA\RequestBody(
      *         required=true,
      *         @OA\JsonContent(
      *             required={"problem_id", "text"},
-     *             @OA\Property(property="status", type="boolean", example=true),
+     *             @OA\Property(property="problem_id", type="integer", example=12),
      *             @OA\Property(property="text", type="string", example="This is a comment")
      *         )
      *     ),
@@ -71,8 +86,10 @@ class CommentController extends Controller
      * )
      */
 
+
     public function store(CommentRequest $request): JsonResponse
     {
+
         $validated = $request->validated();
         $validated['user_id'] = auth()->id();
 
@@ -89,7 +106,7 @@ class CommentController extends Controller
      *     path="/api/comments/{id}",
      *     summary="Update a comment",
      *     tags={"Comment"},
-     *     security={{ "sanctum": {} }},
+     *     security={{"sanctum":{}}},
      *     @OA\Parameter(
      *         name="id",
      *         in="path",
