@@ -52,6 +52,20 @@ class ProblemController extends Controller
      *         required=false,
      *         @OA\Schema(type="string", enum={"asc", "desc"}, example="desc")
      *     ),
+     *          @OA\Parameter(
+     *          name="from_date",
+     *          in="query",
+     *          description="Filter problems created from this date (YYYY-MM-DD)",
+     *          required=false,
+     *          @OA\Schema(type="string", format="date", example="2025-03-01")
+     *      ),
+     *      @OA\Parameter(
+     *          name="to_date",
+     *          in="query",
+     *          description="Filter problems created up to this date (YYYY-MM-DD)",
+     *          required=false,
+     *          @OA\Schema(type="string", format="date", example="2025-03-31")
+     *      ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful operation",
@@ -106,7 +120,17 @@ class ProblemController extends Controller
             $query->whereIn('category_id', $categories);
         }
 
+        $query->whereNotIn('status', ['pending']);
+
         $query->where('status', $request->input('status', 'in_progress'));
+
+        if ($request->filled('from_date')) {
+            $query->whereDate('created_at', '>=', $request->input('from_date'));
+        }
+
+        if ($request->filled('to_date')) {
+            $query->whereDate('created_at', '<=', $request->input('to_date'));
+        }
 
         return ProblemResource::collection(
             $query->orderBy('created_at', $request->input('sort', 'desc'))->paginate(10)

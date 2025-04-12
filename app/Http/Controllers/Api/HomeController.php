@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 
 /**
  * @OA\Get(
- *     path="/api/home",
+ *     path="/home",
  *     summary="Home API",
  *     description="Description of API.",
  *     tags={"Home"},
