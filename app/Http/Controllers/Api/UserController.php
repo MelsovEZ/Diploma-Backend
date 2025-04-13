@@ -152,6 +152,13 @@ class UserController extends Controller
      *     summary="Get all users",
      *     tags={"User"},
      *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search users",
+     *         required=false,
+     *         @OA\Schema(type="string", example="John")
+     *     ),
      *     @OA\Response(
      *         response=200,
      *         description="Successful response",

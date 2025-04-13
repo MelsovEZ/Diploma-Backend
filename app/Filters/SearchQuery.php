@@ -18,6 +18,10 @@ class SearchQuery
                     $method = $index === 0 ? 'where' : 'orWhere';
                     $q->{$method}($field, 'ILIKE', "%{$search}%");
                 }
+                if (in_array('name', $fields) && in_array('surname', $fields)) {
+                    $q->orWhereRaw("LOWER(CONCAT(name, ' ', surname)) ILIKE ?", ["%{$search}%"]);
+                    $q->orWhereRaw("LOWER(CONCAT(surname, ' ', name)) ILIKE ?", ["%{$search}%"]);
+                }
             });
 
             $caseParts = [];

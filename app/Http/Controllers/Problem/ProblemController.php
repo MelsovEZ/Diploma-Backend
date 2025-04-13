@@ -25,6 +25,13 @@ class ProblemController extends Controller
      *     summary="Get paginated list of problems with filtering and sorting",
      *     tags={"Problems"},
      *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search something",
+     *         required=false,
+     *         @OA\Schema(type="string", example="With photo")
+     *     ),
+     *     @OA\Parameter(
      *         name="page",
      *         in="query",
      *         description="Page number for pagination",
