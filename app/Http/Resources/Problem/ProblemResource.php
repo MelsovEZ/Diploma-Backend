@@ -15,6 +15,7 @@ class ProblemResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'category_id' => $this->category_id,
+            'category_name' => optional($this->category)->name,
             'status' => $this->status,
             'location_lat' => $this->location_lat,
             'location_lng' => $this->location_lng,
@@ -23,6 +24,12 @@ class ProblemResource extends JsonResource
             'photo_urls' => $this->photos->pluck('photo_url'),
             'likes_count' => $this->likes()->count(),
             'comments_count' => $this->comments()->count(),
+            'user' => [
+                'name' => $this->user->name,
+                'surname' => $this->user->surname,
+                'email' => $this->user->email,
+                'photo_url' => $this->user->photo_url,
+            ]
         ];
     }
 }

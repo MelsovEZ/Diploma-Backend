@@ -1,10 +1,12 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Filters\SearchQuery;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\AuthRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\User\UserResource;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -144,5 +146,39 @@ class UserController extends Controller
         return response()->json(new UserResource($user));
     }
 
+    /**
+     * @OA\Get(
+     *     path="/api/users",
+     *     summary="Get all users",
+     *     tags={"User"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search users",
+     *         required=false,
+     *         @OA\Schema(type="string", example="John")
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Successful response",
+     *         @OA\JsonContent(type="array", @OA\Items(ref="#/components/schemas/UserResource"))
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Unauthenticated"
+     *     )
+     * )
+     */
+    public function getAllUsers(Request $request): JsonResponse
+    {
+        $query = User::query();
+
+        $query = SearchQuery::apply($query, $request, ['name', 'surname', 'email']);
+
+        $users = $query->get();
+
+        return response()->json(UserResource::collection($users));
+    }
 
 }

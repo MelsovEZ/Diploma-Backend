@@ -25,6 +25,13 @@ class ProblemController extends Controller
      *     summary="Get paginated list of problems with filtering and sorting",
      *     tags={"Problems"},
      *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search something",
+     *         required=false,
+     *         @OA\Schema(type="string", example="With photo")
+     *     ),
+     *     @OA\Parameter(
      *         name="page",
      *         in="query",
      *         description="Page number for pagination",
@@ -78,6 +85,7 @@ class ProblemController extends Controller
      *                     @OA\Property(property="title", type="string", example="With photo"),
      *                     @OA\Property(property="description", type="string", example="desc"),
      *                     @OA\Property(property="category_id", type="integer", example=1),
+     *                      @OA\Property(property="category_name", type="string", example="Мусор"),
      *                     @OA\Property(property="status", type="string", enum={"pending", "in_progress", "done", "declined"}, example="pending"),
      *                     @OA\Property(property="location_lat", type="number", format="float", example=59.333),
      *                     @OA\Property(property="location_lng", type="number", format="float", example=20.333),
@@ -113,29 +121,18 @@ class ProblemController extends Controller
 
     public function index(ProblemIndexRequest $request): AnonymousResourceCollection
     {
-        $query = Problem::with('photos:problem_id,photo_url')
-            ->select(['problem_id', 'user_id', 'title', 'description', 'category_id', 'status', 'location_lat', 'location_lng', 'created_at']);
+        $query = Problem::with([
+            'photos:problem_id,photo_url',
+            'category:id,name',
+            'user:id,name,surname,email,photo_url'
+        ])
+            ->select(['problem_id', 'user_id', 'title', 'description', 'category_id', 'status', 'location_lat', 'location_lng', 'created_at'])
+            ->filter($request)
+            ->orderBy('created_at', $request->input('sort', 'desc'));
 
-        if ($categories = $request->input('category_id')) {
-            $query->whereIn('category_id', $categories);
-        }
-
-        $query->whereNotIn('status', ['pending']);
-
-        $query->where('status', $request->input('status', 'in_progress'));
-
-        if ($request->filled('from_date')) {
-            $query->whereDate('created_at', '>=', $request->input('from_date'));
-        }
-
-        if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->input('to_date'));
-        }
-
-        return ProblemResource::collection(
-            $query->orderBy('created_at', $request->input('sort', 'desc'))->paginate(10)
-        );
+        return ProblemResource::collection($query->paginate(10));
     }
+
 
     /**
      * @OA\Post(
@@ -281,8 +278,6 @@ class ProblemController extends Controller
                 }
             }
         }
-
-
         return response()->json(['status' => true, 'problem' => $problem]);
     }
 

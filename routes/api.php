@@ -7,11 +7,11 @@ use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\Like\LikeController;
 use App\Http\Controllers\Problem\ProblemController;
+use App\Http\Controllers\Problem\ProblemResourceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
-
 /*
 Log::info('Incoming request', [
     'method' => request()->method(),
@@ -25,6 +25,8 @@ Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout']);
 
+
+Route::get('/users', [UserController::class, 'getAllUsers']);
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/user', [UserController::class, 'getUser']);
     Route::post('/user', [UserController::class, 'updateUser']);
@@ -36,6 +38,8 @@ Route::middleware('auth:sanctum')->group(function () {
 
 Route::get('/problems', [ProblemController::class, 'index']);
 Route::get('/problems/{problem_id}/likes', [LikeController::class, 'getProblemLikes']);
+Route::get('/problem-resources', [ProblemResourceController::class, 'index']);
+
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/problems', [ProblemController::class, 'store']);
     Route::get('/problems/{problem}', [ProblemController::class, 'show']);
