@@ -24,6 +24,12 @@ class ProblemResource extends JsonResource
             'photo_urls' => $this->photos->pluck('photo_url'),
             'likes_count' => $this->likes()->count(),
             'comments_count' => $this->comments()->count(),
+            'user' => [
+                'name' => $this->user->name,
+                'surname' => $this->user->surname,
+                'email' => $this->user->email,
+                'photo_url' => $this->user->photo_url,
+            ]
         ];
     }
 }

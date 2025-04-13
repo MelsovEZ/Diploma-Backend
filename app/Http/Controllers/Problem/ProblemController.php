@@ -116,7 +116,8 @@ class ProblemController extends Controller
     {
         $query = Problem::with([
             'photos:problem_id,photo_url',
-            'category:id,name'
+            'category:id,name',
+            'user:id,name,surname,email,photo_url'
         ])
             ->select(['problem_id', 'user_id', 'title', 'description', 'category_id', 'status', 'location_lat', 'location_lng', 'created_at'])
             ->filter($request)

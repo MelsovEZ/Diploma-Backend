@@ -9,6 +9,7 @@ class SearchQuery
 {
     public static function apply(Builder $query, Request $request, array $fields): Builder
     {
+
         if ($request->filled('search')) {
             $search = strtolower($request->input('search'));
 

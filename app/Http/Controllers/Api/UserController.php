@@ -1,6 +1,7 @@
 <?php
 namespace App\Http\Controllers\Api;
 
+use App\Filters\SearchQuery;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\AuthRequest;
 use App\Http\Requests\User\UpdateUserRequest;
@@ -162,9 +163,13 @@ class UserController extends Controller
      *     )
      * )
      */
-    public function getAllUsers(): JsonResponse
+    public function getAllUsers(Request $request): JsonResponse
     {
-        $users = User::all();
+        $query = User::query();
+
+        $query = SearchQuery::apply($query, $request, ['name', 'surname', 'email']);
+
+        $users = $query->get();
 
         return response()->json(UserResource::collection($users));
     }

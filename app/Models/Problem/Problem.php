@@ -5,6 +5,7 @@ namespace App\Models\Problem;
 use App\Filters\SearchQuery;
 use App\Models\Category\Category;
 use App\Models\Comment\Comment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -28,6 +29,10 @@ class Problem extends Model
         'location_lat',
         'location_lng',
     ];
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
     public function photos(): HasMany
     {
         return $this->hasMany(ProblemPhoto::class, 'problem_id', 'problem_id');
