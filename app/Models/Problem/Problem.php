@@ -2,6 +2,7 @@
 
 namespace App\Models\Problem;
 
+use App\Filters\SearchQuery;
 use App\Models\Category\Category;
 use App\Models\Comment\Comment;
 use Illuminate\Database\Eloquent\Builder;
@@ -49,6 +50,9 @@ class Problem extends Model
 
     public function scopeFilter(Builder $query, Request $request): Builder
     {
+
+        $query = SearchQuery::apply($query, $request, ['title', 'description']);
+
         if ($request->filled('category_id')) {
             $query->whereIn('category_id', $request->input('category_id'));
         }
@@ -66,7 +70,6 @@ class Problem extends Model
         if ($request->filled('to_date')) {
             $query->whereDate('created_at', '<=', $request->input('to_date'));
         }
-
 
         $query->when(!auth()->check() || !in_array(auth()->user()->status, ['admin', 'moderator']), function ($query) {
             return $query->whereNotIn('status', ['pending']);
