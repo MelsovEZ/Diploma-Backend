@@ -25,6 +25,13 @@ class ProblemController extends Controller
      *     summary="Get paginated list of problems with filtering and sorting",
      *     tags={"Problems"},
      *     @OA\Parameter(
+     *         name="search",
+     *         in="query",
+     *         description="Search something",
+     *         required=false,
+     *         @OA\Schema(type="string", example="With photo")
+     *     ),
+     *     @OA\Parameter(
      *         name="page",
      *         in="query",
      *         description="Page number for pagination",
@@ -116,7 +123,8 @@ class ProblemController extends Controller
     {
         $query = Problem::with([
             'photos:problem_id,photo_url',
-            'category:id,name'
+            'category:id,name',
+            'user:id,name,surname,email,photo_url'
         ])
             ->select(['problem_id', 'user_id', 'title', 'description', 'category_id', 'status', 'location_lat', 'location_lng', 'created_at'])
             ->filter($request)

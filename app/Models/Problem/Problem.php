@@ -2,8 +2,10 @@
 
 namespace App\Models\Problem;
 
+use App\Filters\SearchQuery;
 use App\Models\Category\Category;
 use App\Models\Comment\Comment;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -27,6 +29,10 @@ class Problem extends Model
         'location_lat',
         'location_lng',
     ];
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
     public function photos(): HasMany
     {
         return $this->hasMany(ProblemPhoto::class, 'problem_id', 'problem_id');
@@ -49,6 +55,9 @@ class Problem extends Model
 
     public function scopeFilter(Builder $query, Request $request): Builder
     {
+
+        $query = SearchQuery::apply($query, $request, ['title', 'description']);
+
         if ($request->filled('category_id')) {
             $query->whereIn('category_id', $request->input('category_id'));
         }
@@ -66,7 +75,6 @@ class Problem extends Model
         if ($request->filled('to_date')) {
             $query->whereDate('created_at', '<=', $request->input('to_date'));
         }
-
 
         $query->when(!auth()->check() || !in_array(auth()->user()->status, ['admin', 'moderator']), function ($query) {
             return $query->whereNotIn('status', ['pending']);
