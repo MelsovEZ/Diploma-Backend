@@ -15,6 +15,7 @@ class ProblemResource extends JsonResource
             'title' => $this->title,
             'description' => $this->description,
             'category_id' => $this->category_id,
+            'category_name' => optional($this->category)->name,
             'status' => $this->status,
             'location_lat' => $this->location_lat,
             'location_lng' => $this->location_lng,

@@ -14,7 +14,7 @@ class Category extends Model
 
     public $timestamps = true;
 
-    public static array $protectedCategories = ['Trash', 'Road'];
+    public static array $protectedCategories = ['Мусор', 'Дорога'];
 
     public function isProtected(): bool
     {

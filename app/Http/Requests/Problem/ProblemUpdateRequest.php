@@ -17,6 +17,7 @@ class ProblemUpdateRequest extends FormRequest
             'title' => 'sometimes|string|max:255',
             'description' => 'sometimes|string',
             'category_id' => 'sometimes|exists:categories,id',
+            'city_id' => 'sometimes|exists:cities,id',
             'location_lat' => 'sometimes|numeric',
             'location_lng' => 'sometimes|numeric',
             'photos' => 'nullable|array|max:5',
