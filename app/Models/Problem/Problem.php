@@ -4,7 +4,9 @@ namespace App\Models\Problem;
 
 use App\Filters\SearchQuery;
 use App\Models\Category\Category;
+use App\Models\City\City;
 use App\Models\Comment\Comment;
+use App\Models\District\District;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -18,13 +20,15 @@ class Problem extends Model
     use HasFactory;
 
     protected $primaryKey = 'problem_id';
-
+    protected $dateFormat = 'Y-m-d H:i:s';
     protected $fillable = [
         'user_id',
         'title',
         'description',
         'category_id',
         'city_id',
+        'district_id',
+        'address',
         'status',
         'location_lat',
         'location_lng',
@@ -41,6 +45,15 @@ class Problem extends Model
     public function category(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(Category::class, 'category_id', 'id');
+    }
+
+    public function city(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(City::class, 'city_id', 'id');
+    }
+    public function district(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    {
+        return $this->belongsTo(District::class, 'district_id', 'id');
     }
 
     public function likes(): HasMany

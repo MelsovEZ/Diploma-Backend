@@ -12,14 +12,14 @@ class ProblemResourceController extends Controller
 {
     /**
      * @OA\Get(
-     *     path="/api/problems/resources",
+     *     path="/api/problem-resources",
      *     summary="Get categories and cities for problem creation",
-     *     description="Fetches the list of categories and cities for the creation of a problem",
+     *     description="Fetches the list of categories, cities, and districts for the creation of a problem",
      *     operationId="getProblemResources",
      *     tags={"Problems"},
      *     @OA\Response(
      *         response=200,
-     *         description="List of categories and cities",
+     *         description="List of categories, cities, and districts",
      *         @OA\JsonContent(
      *             type="object",
      *             @OA\Property(
@@ -37,7 +37,16 @@ class ProblemResourceController extends Controller
      *                 @OA\Items(
      *                     type="object",
      *                     @OA\Property(property="id", type="integer", example=1),
-     *                     @OA\Property(property="name", type="string", example="Алматы")
+     *                     @OA\Property(property="name", type="string", example="Алматы"),
+     *                     @OA\Property(
+     *                         property="districts",
+     *                         type="array",
+     *                         @OA\Items(
+     *                             type="object",
+     *                             @OA\Property(property="id", type="integer", example=1),
+     *                             @OA\Property(property="name", type="string", example="Алатауский")
+     *                         )
+     *                     )
      *                 )
      *             )
      *         )
@@ -52,11 +61,12 @@ class ProblemResourceController extends Controller
      *     )
      * )
      */
+
     public function index(): JsonResponse
     {
         return response()->json([
             'categories' => CategoryResource::collection(Category::all()),
-            'cities' => CityResource::collection(City::orderBy('name')->get()),
+            'cities' => CityResource::collection(City::with('districts')->orderBy('name')->get()),
         ]);
     }
 }

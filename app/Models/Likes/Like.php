@@ -10,14 +10,14 @@ class Like extends Model
 
     public $timestamps = false;
 
-    public function user()
+    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
         return $this->belongsTo(\App\Models\User::class);
     }
 
-    public function problem()
+    public function problem(): \Illuminate\Database\Eloquent\Relations\BelongsTo
     {
-        return $this->belongsTo(\App\Models\Problem::class, 'problem_id', 'problem_id');
+        return $this->belongsTo(\App\Models\Problem\Problem::class, 'problem_id', 'problem_id');
     }
 }
 
