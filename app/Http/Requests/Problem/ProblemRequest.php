@@ -18,8 +18,8 @@ class ProblemRequest extends FormRequest
             'description' => 'required|string',
             'category_id' => 'required|exists:categories,id',
             'city_id' => 'required|exists:cities,id',
-            'location_lat' => 'required|numeric',
-            'location_lng' => 'required|numeric',
+            'district_id' => 'required|exists:districts,id',
+            'address' => 'required|string|max:255',
             'photos' => 'nullable|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];

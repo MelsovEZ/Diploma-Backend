@@ -18,8 +18,10 @@ class ProblemUpdateRequest extends FormRequest
             'description' => 'sometimes|string',
             'category_id' => 'sometimes|exists:categories,id',
             'city_id' => 'sometimes|exists:cities,id',
-            'location_lat' => 'sometimes|numeric',
-            'location_lng' => 'sometimes|numeric',
+            'district_id' => 'sometimes|exists:districts,id',
+            'address' => 'sometimes|string|max:255',
+            'location_lat' => 'nullable|numeric',
+            'location_lng' => 'nullable|numeric',
             'photos' => 'nullable|array|max:5',
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
