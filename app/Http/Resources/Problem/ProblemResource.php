@@ -30,8 +30,9 @@ class ProblemResource extends JsonResource
             'location_lat' => $this->location_lat,
             'location_lng' => $this->location_lng,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at->format('Y-m-d H:i:s'),
+            'updated_at' => $this->updated_at ? $this->updated_at->format('Y-m-d H:i:s') : null,
             'photo_urls' => $this->photos->pluck('photo_url'),
+            'liked_by_user' => $this->likes()->where('user_id', auth()->id())->exists(),
             'likes_count' => $this->likes()->count(),
             'comments_count' => $this->comments()->count(),
             'user' => [

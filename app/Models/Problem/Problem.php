@@ -77,8 +77,6 @@ class Problem extends Model
 
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
-        } else {
-            $query->where('status', 'in_progress');
         }
 
         if ($request->filled('from_date')) {

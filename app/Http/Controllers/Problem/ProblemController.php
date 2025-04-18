@@ -114,6 +114,7 @@ class ProblemController extends Controller
      *                     @OA\Property(property="photo_urls", type="array",
      *                         @OA\Items(type="string", example="https://s3.fr-par.scw.cloud/diploma-bucket/problems/User_1/problem_31/a7HJRy3SJpAySlBz5buSU78lsB4phc0dpfu9IjiC.jpg")
      *                     ),
+     *                     @OA\Property(property="liked_by_user", type="boolean", example=true),
      *                     @OA\Property(property="likes_count", type="integer", example=0),
      *                     @OA\Property(property="comments_count", type="integer", example=0),
      *                     @OA\Property(property="user", type="object",
@@ -387,24 +388,6 @@ class ProblemController extends Controller
         return response()->json(['message' => 'Problem deleted successfully']);
     }
 
-    /**
-     * @OA\Post(
-     *     path="/api/problems/{problem_id}/delete-photos",
-     *     summary="Delete all photos associated with a problem",
-     *     tags={"Problems"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="problem_id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\Response(response=403, description="Unauthorized"),
-     *     @OA\Response(response=404, description="Problem not found")
-     * )
-     */
-
-
     public function deleteProblemPhotos(Problem $problem): void
     {
         $photos = ProblemPhoto::where('problem_id', $problem->problem_id)->get();
@@ -455,7 +438,7 @@ class ProblemController extends Controller
     {
         $user = auth()->user();
 
-        if (!in_array($user->status, ['admin', 'moderator'])) {
+        if ($user->status != 'admin') {
             return response()->json(['message' => 'Forbidden'], 403);
         }
 
