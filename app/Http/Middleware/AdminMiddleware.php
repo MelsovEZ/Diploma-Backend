@@ -20,15 +20,22 @@ class AdminMiddleware
             return $next($request);
         }
 
-        if ($user->status === 'moderator' && !$this->isModeratorManagementRoute($request)) {
-            return $next($request);
+        if ($user->status === 'moderator') {
+            if ($this->isModeratorTaskRoute($request)) {
+                return $next($request);
+            }
+
+            return response()->json(['message' => 'You don\'t have permission!'], 403);
         }
 
         return response()->json(['message' => 'You don`t have permission!'], 403);
     }
 
-    private function isModeratorManagementRoute(Request $request): bool
+    private function isModeratorTaskRoute(Request $request): bool
     {
-        return $request->is('api/users/*/make-moderator') || $request->is('api/users/*/remove-moderator');
+        return $request->is('api/problems/*/report') ||
+            $request->is('api/problems/*/resolve') ||
+            $request->is('api/problems/*/submit-resolution') ||
+            $request->is('api/problems/*/report/update');
     }
 }

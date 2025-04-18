@@ -12,7 +12,7 @@ class ProblemIndexRequest extends FormRequest
             'category_id' => ['sometimes', 'array'],
             'category_id.*' => ['integer'],
             'sort' => ['sometimes', 'in:asc,desc'],
-            'status' => ['sometimes', 'in:pending,in_progress,declined,done'],
+            'status' => ['sometimes', 'in:pending,in_progress,in_review,declined,done'],
             'from_date' => ['sometimes', 'date'],
             'to_date' => ['sometimes', 'date', 'after_or_equal:from_date'],
         ];
