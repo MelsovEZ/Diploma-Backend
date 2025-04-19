@@ -14,8 +14,8 @@ class ProblemReport extends Model
     protected $keyType = 'int';
 
     protected $table = 'problem_reports';
-    public $timestamps = false;
 
+    public $timestamps = false;
 
     protected $fillable = [
         'problem_id',
@@ -35,4 +35,9 @@ class ProblemReport extends Model
     {
         return $this->belongsTo(User::class, 'moderator_id');
     }
+    public function photos(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(ProblemReportPhoto::class, 'report_id', 'report_id');
+    }
+
 }
