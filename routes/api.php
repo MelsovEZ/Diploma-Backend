@@ -3,6 +3,7 @@
 use App\Http\Controllers\Admin\AdminController;
 use App\Http\Controllers\Api\UserController;
 use App\Http\Controllers\Api\UserProblemController;
+use App\Http\Controllers\Auth\RegisterController;
 use App\Http\Controllers\Category\CategoryController;
 use App\Http\Controllers\Comment\CommentController;
 use App\Http\Controllers\Like\LikeController;
@@ -10,21 +11,21 @@ use App\Http\Controllers\Problem\ProblemController;
 use App\Http\Controllers\Problem\ProblemResourceController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
-/*
+
 Log::info('Incoming request', [
     'method' => request()->method(),
     'url' => request()->fullUrl(),
     'headers' => request()->headers->all(),
     'body' => request()->all(),
 ]);
-*/
 
-Route::post('/register', [\App\Http\Controllers\Auth\RegisterController::class, 'register']);
+Route::post('/register', [RegisterController::class, 'register']);
+Route::post('/verify-email', [RegisterController::class, 'verifyEmail']);
 Route::post('/login', [\App\Http\Controllers\Auth\LoginController::class, 'login']);
 Route::post('/logout', [\App\Http\Controllers\Auth\LoginController::class, 'logout']);
-
 
 Route::get('/users', [UserController::class, 'getAllUsers']);
 Route::middleware('auth:sanctum')->group(function () {
@@ -33,6 +34,16 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('/user/photo', [UserController::class, 'deletePhoto']);
 
     Route::get('/user/problems', [UserProblemController::class, 'getUserProblems']);
+});
+
+Route::get('/test-mail', function () {
+    Mail::raw('Ваш код 655595', function ($message) {
+        $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
+            ->to('210103203@stu.sdu.edu.kz')
+            ->subject('Верификация');
+    });
+
+    return response()->json(['message' => 'Письмо отправлено!']);
 });
 
 
