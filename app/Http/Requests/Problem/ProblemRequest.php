@@ -24,4 +24,24 @@ class ProblemRequest extends FormRequest
             'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
         ];
     }
+    public function messages(): array
+    {
+        return [
+            'title.required' => 'Название проблемы обязательно.',
+            'title.max' => 'Название не должно превышать 255 символов.',
+            'description.required' => 'Описание проблемы обязательно.',
+            'category_id.required' => 'Категория проблемы обязательна.',
+            'category_id.exists' => 'Выбранная категория не существует.',
+            'city_id.required' => 'Город обязательен.',
+            'city_id.exists' => 'Выбранный город не существует.',
+            'district_id.required' => 'Район обязателен.',
+            'district_id.exists' => 'Выбранный район не существует.',
+            'address.required' => 'Адрес обязательный.',
+            'address.max' => 'Адрес не должен превышать 255 символов.',
+            'photos.max' => 'Максимальное количество фотографий - 5.',
+            'photos.*.image' => 'Каждое фото должно быть изображением.',
+            'photos.*.mimes' => 'Каждое фото должно быть формата jpeg, png, jpg, gif или svg.',
+            'photos.*.max' => 'Каждое фото не должно превышать 2 MB.',
+        ];
+    }
 }

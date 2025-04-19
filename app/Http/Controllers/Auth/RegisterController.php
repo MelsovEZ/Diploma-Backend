@@ -26,7 +26,7 @@ class RegisterController extends Controller
      *         required=true,
      *         @OA\JsonContent(
      *             required={"name", "email", "password", "password_confirmation"},
-     *             @OA\Property(property="name", type="string", example="John Doe"),
+     *             @OA\Property(property="name", type="string", example="JohnDoe"),
      *             @OA\Property(property="email", type="string", format="email", example="john.doe@example.com"),
      *             @OA\Property(property="password", type="string", example="password123"),
      *             @OA\Property(property="password_confirmation", type="string", example="password123")
@@ -43,11 +43,30 @@ class RegisterController extends Controller
      *         response=422,
      *         description="Validation Error",
      *         @OA\JsonContent(
-     *             @OA\Property(property="errors", type="object")
+     *             @OA\Property(
+     *                 property="errors",
+     *                 type="object",
+     *                 @OA\Property(
+     *                     property="name",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Имя не должно содержать пробелы.")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="email",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Эта почта уже занята.")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="password",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="Пароли не совпадают.")
+     *                 )
+     *             )
      *         )
      *     )
      * )
      */
+
     public function register(RegisterRequest $request): JsonResponse
     {
         $verificationCode = rand(100000, 999999);
@@ -64,12 +83,9 @@ class RegisterController extends Controller
         Mail::send('auth.verify-code', [
             'code' => $verificationCode,
         ], function ($message) use ($verificationCode, $request) {
-            $logo = $message->embed(public_path('images/logo.png'));
-
             $htmlPart = new TextPart(
                 view('auth.verify-code', [
-                    'code' => $verificationCode,
-                    'logo' => $logo
+                    'code' => $verificationCode
                 ])->render(),
                 'utf-8',
                 'html'
@@ -80,8 +96,9 @@ class RegisterController extends Controller
                 ->setBody($htmlPart);
         });
 
+
         return response()->json([
-            'message' => 'Письмо с кодом отправлено на ваш email. Пожалуйста, проверьте также папку "Спам".'
+            'message' => 'Письмо с кодом отправлено на ваш email. Пожалуйста, проверьте также папку Спам.'
         ], 200);
     }
 

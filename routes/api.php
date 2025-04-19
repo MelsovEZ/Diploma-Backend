@@ -14,13 +14,22 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Route;
 use Illuminate\Support\Facades\Storage;
-
+/*
 Log::info('Incoming request', [
     'method' => request()->method(),
     'url' => request()->fullUrl(),
     'headers' => request()->headers->all(),
     'body' => request()->all(),
 ]);
+*/
+
+Route::get('/verify', function () {
+    $logo = asset('images/logo.png'); // Публичный URL
+    return view('auth.verify-code', [
+        'code' => '123356',
+        'logo' => $logo
+    ]);
+});
 
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/verify-email', [RegisterController::class, 'verifyEmail']);
