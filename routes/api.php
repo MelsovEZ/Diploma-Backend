@@ -22,7 +22,7 @@ Log::info('Incoming request', [
     'body' => request()->all(),
 ]);
 */
-
+/*
 Route::get('/verify', function () {
     $logo = asset('images/logo.png'); // Публичный URL
     return view('auth.verify-code', [
@@ -30,6 +30,7 @@ Route::get('/verify', function () {
         'logo' => $logo
     ]);
 });
+*/
 
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/verify-email', [RegisterController::class, 'verifyEmail']);
