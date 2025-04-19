@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Likes\Like;
 use Illuminate\Http\Request;
 
@@ -65,6 +66,17 @@ class Problem extends Model
     {
         return $this->hasMany(Comment::class, 'problem_id', 'problem_id');
     }
+
+    public function report(): HasOne
+    {
+        return $this->hasOne(ProblemReport::class, 'problem_id', 'problem_id');
+    }
+
+    public function reportPhotos(): HasMany
+    {
+        return $this->hasMany(ProblemReportPhoto::class, 'problem_id');
+    }
+
 
     public function scopeFilter(Builder $query, Request $request): Builder
     {

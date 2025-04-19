@@ -279,6 +279,16 @@ class ProblemController extends Controller
      */
     public function show(Problem $problem): ProblemResource
     {
+        $problem->load([
+            'photos:problem_id,photo_url',
+            'category:id,name',
+            'city:id,name',
+            'district:id,name',
+            'user:id,name,surname,email,photo_url',
+            'report.photos:report_id,photo_url',
+            'report.moderator:id,name,surname,email,photo_url'
+        ]);
+
         return new ProblemResource($problem);
     }
 
