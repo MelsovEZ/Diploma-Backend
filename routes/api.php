@@ -37,12 +37,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 Route::get('/problems', [ProblemController::class, 'index']);
+Route::get('/problems/{problem}', [ProblemController::class, 'show']);
 Route::get('/problems/{problem_id}/likes', [LikeController::class, 'getProblemLikes']);
 Route::get('/problem-resources', [ProblemResourceController::class, 'index']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/problems', [ProblemController::class, 'store']);
-    Route::get('/problems/{problem}', [ProblemController::class, 'show']);
     Route::post('/problems/{problem}', [ProblemController::class, 'update']);
     Route::delete('/problems/{problem}', [ProblemController::class, 'destroy']);
     Route::post('/problems/{problem_id}/like', [LikeController::class, 'toggleLike']);
