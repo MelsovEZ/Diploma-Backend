@@ -67,14 +67,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/problems/{problem}', [ProblemController::class, 'update']);
     Route::delete('/problems/{problem}', [ProblemController::class, 'destroy']);
     Route::post('/problems/{problem_id}/like', [LikeController::class, 'toggleLike']);
-
-    Route::patch('/problems/{problem_id}/status', [ProblemController::class, 'updateStatus']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/problems/{problem_id}/assign-moderator/{moderator_id}', [AdminController::class, 'assignModeratorToProblem']);
     Route::post('/problems/{problem_id}/report', [AdminController::class, 'submitProblemReport']);
     Route::post('/problems/{problem_id}/report/update', [AdminController::class, 'updateProblemReport']);
+
+    Route::post('/problems/{problem_id}/admin-review', [AdminController::class, 'reviewProblem']);
 });
 
 

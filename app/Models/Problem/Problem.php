@@ -83,9 +83,10 @@ class Problem extends Model
 
         $query = SearchQuery::apply($query, $request, ['title', 'description']);
 
-        if ($request->filled('category_id')) {
-            $query->whereIn('category_id', $request->input('category_id'));
+        if ($request->filled('category_id') && is_array($request->category_id)) {
+            $query->whereIn('category_id', $request->category_id);
         }
+
 
         if ($request->filled('status')) {
             $query->where('status', $request->input('status'));
@@ -96,7 +97,7 @@ class Problem extends Model
         }
 
         if ($request->filled('to_date')) {
-            $query->whereDate('created_at', '<=', $request->input('to_date'));
+            $query->where('created_at', '>=', $request->input('from_date'));
         }
 
         $query->when(!auth()->check() || !in_array(auth()->user()->status, ['admin', 'moderator']), function ($query) {
