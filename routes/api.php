@@ -67,8 +67,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('/problems/{problem}', [ProblemController::class, 'update']);
     Route::delete('/problems/{problem}', [ProblemController::class, 'destroy']);
     Route::post('/problems/{problem_id}/like', [LikeController::class, 'toggleLike']);
-
-    Route::patch('/problems/{problem_id}/status', [ProblemController::class, 'updateStatus']);
 });
 
 Route::middleware(['auth:sanctum', 'admin'])->group(function () {

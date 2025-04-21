@@ -454,58 +454,5 @@ class ProblemController extends Controller
         }
     }
 
-    /**
-     * @OA\Patch(
-     *     path="/api/problems/{problem_id}/status",
-     *     summary="Update the status of a problem",
-     *     tags={"Problems"},
-     *     security={{"sanctum":{}}},
-     *     @OA\Parameter(
-     *         name="problem_id",
-     *         in="path",
-     *         required=true,
-     *         @OA\Schema(type="integer")
-     *     ),
-     *     @OA\RequestBody(
-     *         required=true,
-     *         @OA\JsonContent(
-     *             required={"status"},
-     *             @OA\Property(property="status", type="string", enum={"in_progress", "declined", "done"})
-     *         )
-     *     ),
-     *     @OA\Response(
-     *         response=200,
-     *         description="Status updated successfully",
-     *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Status updated successfully")
-     *         )
-     *     ),
-     *     @OA\Response(response=400, description="Invalid status"),
-     *     @OA\Response(response=403, description="Forbidden"),
-     *     @OA\Response(response=404, description="Problem not found")
-     * )
-     */
-
-
-    public function updateStatus(Request $request, $problem_id): JsonResponse
-    {
-        $user = auth()->user();
-
-        if ($user->status != 'admin') {
-            return response()->json(['message' => 'Forbidden'], 403);
-        }
-
-        $problem = Problem::findOrFail($problem_id);
-        $status = $request->input('status');
-
-        if (!in_array($status, ['in_progress', 'declined', 'done'])) {
-            return response()->json(['message' => 'Invalid status'], 400);
-        }
-
-        $problem->status = $status;
-        $problem->save();
-
-        return response()->json(['message' => 'Status updated successfully']);
-    }
 
 }

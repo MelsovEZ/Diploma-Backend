@@ -406,13 +406,13 @@ class AdminController extends Controller
     /**
      * @OA\Post(
      *     path="/api/problems/{problem_id}/admin-review",
-     *     summary="Admin review of the problem solved by the moderator",
+     *     summary="Административная проверка решения проблемы модератором",
      *     tags={"Admin"},
      *     @OA\Parameter(
      *         name="problem_id",
      *         in="path",
      *         required=true,
-     *         description="ID of the problem",
+     *         description="ID проблемы",
      *         @OA\Schema(type="integer")
      *     ),
      *     @OA\RequestBody(
@@ -424,28 +424,47 @@ class AdminController extends Controller
      *                 @OA\Property(
      *                     property="status",
      *                     type="string",
-     *                     enum={"done", "declined"},
-     *                     description="Status of the problem after review"
+     *                     enum={"done", "declined", "in_review"},
+     *                     description="Статус проблемы после проверки администратором (done, declined, in_review)"
      *                 ),
      *                 @OA\Property(
      *                     property="comment",
      *                     type="string",
-     *                     description="Comment from admin on the problem review"
+     *                     nullable=true,
+     *                     description="Комментарий администратора к проверке проблемы"
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Problem reviewed successfully",
+     *         description="Проблема успешно проверена",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Problem reviewed and status updated to done")
+     *             @OA\Property(
+     *                 property="messages",
+     *                 type="array",
+     *                 @OA\Items(
+     *                     type="string",
+     *                     example="Статус проблемы изменен на done"
+     *                 )
+     *             )
      *         )
      *     ),
-     *     @OA\Response(response=404, description="Problem not found"),
-     *     @OA\Response(response=403, description="Unauthorized, only admins can review problems")
+     *     @OA\Response(
+     *         response=404,
+     *         description="Проблема не найдена"
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Неавторизованный доступ, только администраторы могут проверять проблемы"
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Неверный статус проблемы или проблема не находится на проверке"
+     *     )
      * )
      */
+
     public function reviewProblem($problem_id, Request $request): JsonResponse
     {
         // Находим проблему по ID
