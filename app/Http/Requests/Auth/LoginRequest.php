@@ -18,5 +18,17 @@ class LoginRequest extends FormRequest
             'password' => 'required|string|min:8',
         ];
     }
+    public function messages(): array
+    {
+        return [
+            'email.required' => 'Почта обязательна.',
+            'email.string' => 'Неверный логин или пароль.',
+            'email.email' => 'Неверный формат почты.',
+            'email.regex' => 'Неверный формат почты.',
+            'password.required' => 'Пароль обязателен.',
+            'password.string' => 'Неверный логин или пароль.',
+            'password.min' => 'Неверный логин или пароль.',
+        ];
+    }
 }
 

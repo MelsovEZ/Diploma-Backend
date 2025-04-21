@@ -50,9 +50,18 @@ class UserController extends Controller
      *     security={{"sanctum":{}}},
      *     @OA\RequestBody(
      *         required=true,
-     *         @OA\JsonContent(
-     *             @OA\Property(property="name", type="string", example="John Doe"),
-     *             @OA\Property(property="surname", type="string", example="Doe")
+     *         @OA\MediaType(
+     *             mediaType="multipart/form-data",
+     *             @OA\Schema(
+     *                 @OA\Property(property="name", type="string", example="John Doe"),
+     *                 @OA\Property(property="surname", type="string", example="Doe"),
+     *                 @OA\Property(
+     *                     property="photo",
+     *                     type="array",
+     *                     @OA\Items(type="string", format="binary"),
+     *                     description="Optional photo upload (multiple files allowed)"
+     *                 )
+     *             )
      *         )
      *     ),
      *     @OA\Response(
@@ -70,6 +79,8 @@ class UserController extends Controller
      *     )
      * )
      */
+
+
     public function updateUser(UpdateUserRequest $request): JsonResponse
     {
         $user = $request->user();

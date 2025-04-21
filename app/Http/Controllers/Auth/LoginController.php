@@ -22,8 +22,8 @@ class LoginController extends Controller
      * @OA\Post(
      *     path="/api/login",
      *     tags={"Auth"},
-     *     summary="User Login",
-     *     description="Login a user and return an access token",
+     *     summary="Вход пользователя",
+     *     description="Вход пользователя и получение токена доступа",
      *     operationId="loginUser",
      *     @OA\RequestBody(
      *         required=true,
@@ -35,28 +35,29 @@ class LoginController extends Controller
      *     ),
      *     @OA\Response(
      *         response=200,
-     *         description="Login successful",
+     *         description="Вход выполнен успешно",
      *         @OA\JsonContent(
-     *             @OA\Property(property="message", type="string", example="Login successful"),
+     *             @OA\Property(property="message", type="string", example="Вход выполнен успешно."),
      *             @OA\Property(property="token", type="string", example="1|abc123...")
      *         )
      *     ),
      *     @OA\Response(
      *         response=400,
-     *         description="Validation Error",
+     *         description="Ошибка валидации",
      *         @OA\JsonContent(
      *             @OA\Property(property="error", type="object")
      *         )
      *     ),
      *     @OA\Response(
      *         response=401,
-     *         description="Unauthorized",
+     *         description="Неавторизован",
      *         @OA\JsonContent(
-     *             @OA\Property(property="error", type="string", example="Unauthorized")
+     *             @OA\Property(property="error", type="string", example="Логин или пароль неверны.")
      *         )
      *     )
      * )
      */
+
 
     public function login(LoginRequest $request): JsonResponse
     {
@@ -64,14 +65,15 @@ class LoginController extends Controller
 
         if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
-                'error' => 'Unauthorized'
+                'error' => 'Логин или пароль неверны.'
             ], 401);
         }
+
 
         $token = $user->createToken('YourAppName')->plainTextToken;
 
         return response()->json([
-            'message' => 'Login successful',
+            'message' => 'Вход выполнен успешно.',
             'token' => $token
         ], 200);
     }

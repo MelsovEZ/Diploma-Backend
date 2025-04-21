@@ -175,7 +175,7 @@ class ProblemController extends Controller
      *         @OA\MediaType(
      *             mediaType="multipart/form-data",
      *             @OA\Schema(
-     *                 required={"title", "description", "category_id", "city_id", "district_id", "address"},
+     *                 required={"title", "description", "category_id", "city_id", "district_id", "address", "photos[]"},
      *                 @OA\Property(property="title", type="string", example="Broken streetlight"),
      *                 @OA\Property(property="description", type="string", example="The streetlight is broken on 5th avenue."),
      *                 @OA\Property(property="category_id", type="integer", example=1),
@@ -186,17 +186,33 @@ class ProblemController extends Controller
      *                     property="photos[]",
      *                     type="array",
      *                     @OA\Items(type="string", format="binary"),
-     *                     description="Optional multiple photo uploads (1 to 5 images)"
+     *                     description="Multiple photo uploads (1 to 5 images)"
      *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(response=201, description="Problem created successfully"),
-     *     @OA\Response(response=400, description="Invalid city or district ID"),
-     *     @OA\Response(response=403, description="Unauthorized")
+     *     @OA\Response(
+     *         response=400,
+     *         description="Invalid city or district ID",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Город или район с таким ID не найден.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=403,
+     *         description="Unauthorized",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="status", type="boolean", example=false),
+     *             @OA\Property(property="message", type="string", example="Unauthorized")
+     *         )
+     *     )
      * )
-     * @throws ConnectionException
      */
+
+
+
 
     public function store(ProblemRequest $request): JsonResponse
     {
