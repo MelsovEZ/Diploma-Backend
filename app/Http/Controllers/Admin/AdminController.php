@@ -255,7 +255,6 @@ class AdminController extends Controller
         }
 
 
-        // Обновляем описание, submitted_at и статус
         $problemReport->update([
             'description'   => $request->description,
             'submitted_at'  => now(),
@@ -403,6 +402,127 @@ class AdminController extends Controller
         ]);
 
     }
+
+    /**
+     * @OA\Post(
+     *     path="/api/problems/{problem_id}/admin-review",
+     *     summary="Admin review of the problem solved by the moderator",
+     *     tags={"Admin"},
+     *     @OA\Parameter(
+     *         name="problem_id",
+     *         in="path",
+     *         required=true,
+     *         description="ID of the problem",
+     *         @OA\Schema(type="integer")
+     *     ),
+     *     @OA\RequestBody(
+     *         required=true,
+     *         @OA\MediaType(
+     *             mediaType="application/json",
+     *             @OA\Schema(
+     *                 required={"status", "comment"},
+     *                 @OA\Property(
+     *                     property="status",
+     *                     type="string",
+     *                     enum={"done", "declined"},
+     *                     description="Status of the problem after review"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="comment",
+     *                     type="string",
+     *                     description="Comment from admin on the problem review"
+     *                 )
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Problem reviewed successfully",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Problem reviewed and status updated to done")
+     *         )
+     *     ),
+     *     @OA\Response(response=404, description="Problem not found"),
+     *     @OA\Response(response=403, description="Unauthorized, only admins can review problems")
+     * )
+     */
+    public function reviewProblem($problem_id, Request $request): JsonResponse
+    {
+        // Находим проблему по ID
+        $problem = Problem::find($problem_id);
+        if (!$problem) {
+            return response()->json(['error' => 'Problem not found'], 404);
+        }
+
+        // Проверяем, что пользователь админ
+        $admin = auth()->user();
+        if (!$admin || $admin->status !== 'admin') {
+            return response()->json(['error' => 'Неавторизованный доступ, только администраторы могут проверять проблемы'], 403);
+        }
+
+        if (!in_array($problem->status, ['in_review', 'done', 'declined'])) {
+            return response()->json(['error' => 'Статус проблемы не позволяет ее редактировать'], 400);
+        }
+
+
+        // Обновляем статус проблемы и добавляем комментарий
+        $status = $request->input('status');
+        $comment = $request->input('comment');
+
+        $responseMessage = [];
+
+        if ($status && !in_array($status, ['done', 'declined', 'in_review'])) {
+            return response()->json(['error' => 'Неверный статус'], 400);
+        }
+
+        if ($status) {
+            $problem->status = $status;
+            $problem->save();
+            $responseMessage[] = 'Статус проблемы изменен на ' . $status;
+
+            // Обновляем статус в problem_reports
+            DB::table('problem_reports')
+                ->where('problem_id', $problem_id)
+                ->update(['status' => $status]);
+            $responseMessage[] = 'Статус отчета обновлен на ' . $status;
+
+            // Обновляем confirmed_at в зависимости от нового статуса
+            if ($status === 'done') {
+                DB::table('problem_reports')
+                    ->where('problem_id', $problem_id)
+                    ->update(['confirmed_at' => now()]);
+                $responseMessage[] = 'Дата подтверждения отчета обновлена';
+            } else {
+                DB::table('problem_reports')
+                    ->where('problem_id', $problem_id)
+                    ->update(['confirmed_at' => null]);
+                $responseMessage[] = 'Дата подтверждения отчета сброшена';
+            }
+        }
+
+
+        $currentComment = DB::table('problem_reports')
+            ->where('problem_id', $problem_id)
+            ->value('admin_comment');
+        if ($comment !== $currentComment || $comment === '') {
+            // Сохраняем пустой комментарий как null
+            $updatedComment = $comment === '' ? null : $comment;
+
+            DB::table('problem_reports')
+                ->where('problem_id', $problem_id)
+                ->update(['admin_comment' => $updatedComment]);
+
+            $responseMessage[] = 'Комментарий обновлен'; // Добавляем сообщение о комментарии
+        }
+
+        if (empty($responseMessage)) {
+            return response()->json(['message' => 'Нет изменений для обновления']);
+        }
+        return response()->json([
+            'messages' => $responseMessage
+        ]);
+    }
+
 
     public function deleteProblemReportPhotos(ProblemReport $problemReport): void
     {

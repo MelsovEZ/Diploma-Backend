@@ -6,7 +6,7 @@ use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class ProblemResource extends JsonResource
+class ProblemShowResource extends JsonResource
 {
     public function toArray(Request $request): array
     {
@@ -24,7 +24,15 @@ class ProblemResource extends JsonResource
                     'id' => optional($this->city)->id,
                     'name' => optional($this->city)->name,
                 ],
+                'district' => [
+                    'id' => optional($this->district)->id,
+                    'name' => optional($this->district)->name,
+                ],
                 'address' => $this->address,
+                'coordinates' => [
+                    'lat' => $this->location_lat,
+                    'lng' => $this->location_lng,
+                ],
             ],
             'status' => $this->status,
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
@@ -42,6 +50,26 @@ class ProblemResource extends JsonResource
                 'avatar' => optional($this->user)->photo_url,
             ],
         ];
+
+
+
+        if (in_array($this->status, ['in_review', 'done', 'declined']) && $this->report) {
+            $data['report'] = [
+                'description' => $this->report->description,
+                'assigned_at' => Carbon::make($this->report->assigned_at)?->format('Y-m-d H:i:s'),
+                'submitted_at' => Carbon::make($this->report->submitted_at)?->format('Y-m-d H:i:s'),
+                'confirmed_at' => Carbon::make($this->report->confirmed_at)?->format('Y-m-d H:i:s'),
+                'moderator' => $this->report->moderator ? [
+                    'id' => $this->report->moderator->id,
+                    'name' => $this->report->moderator->name,
+                    'surname' => $this->report->moderator->surname,
+                    'email' => $this->report->moderator->email,
+                    'avatar' => $this->report->moderator->photo_url,
+                ] : null,
+                'photos' => $this->report->photos->pluck('photo_url'),
+            ];
+        }
+
 
         return $data;
     }

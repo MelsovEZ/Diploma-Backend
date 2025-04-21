@@ -7,6 +7,7 @@ use App\Http\Requests\Problem\ProblemIndexRequest;
 use App\Http\Requests\Problem\ProblemRequest;
 use App\Http\Requests\Problem\ProblemUpdateRequest;
 use App\Http\Resources\Problem\ProblemResource;
+use App\Http\Resources\Problem\ProblemShowResource;
 use App\Models\City\City;
 use App\Models\District\District;
 use App\Models\Problem\Problem;
@@ -16,6 +17,7 @@ use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -92,7 +94,7 @@ class ProblemController extends Controller
      *             type="object",
      *             @OA\Property(property="data", type="array",
      *                 @OA\Items(
-     *                     @OA\Property(property="problem_id", type="integer", example=43),
+     *                     @OA\Property(property="problem_id", type="integer", example=44),
      *                     @OA\Property(property="user_id", type="integer", example=18),
      *                     @OA\Property(property="title", type="string", example="Test problem 3"),
      *                     @OA\Property(property="description", type="string", example="Test description 3"),
@@ -100,44 +102,65 @@ class ProblemController extends Controller
      *                         @OA\Property(property="id", type="integer", example=1),
      *                         @OA\Property(property="name", type="string", example="Мусор")
      *                     ),
-     *                     @OA\Property(property="city", type="object",
-     *                         @OA\Property(property="id", type="integer", example=1),
-     *                         @OA\Property(property="name", type="string", example="Алматы")
+     *                     @OA\Property(property="location", type="object",
+     *                         @OA\Property(property="city", type="object",
+     *                             @OA\Property(property="id", type="integer", example=1),
+     *                             @OA\Property(property="name", type="string", example="Алматы")
+     *                         ),
+     *                         @OA\Property(property="district", type="object",
+     *                             @OA\Property(property="id", type="integer", example=7),
+     *                             @OA\Property(property="name", type="string", example="Наурызбайский")
+     *                         ),
+     *                         @OA\Property(property="address", type="string", example="проспект Райымбека, 590/7"),
+     *                         @OA\Property(property="coordinates", type="object",
+     *                             @OA\Property(property="lat", type="string", example="43.230939"),
+     *                             @OA\Property(property="lng", type="string", example="76.783178")
+     *                         )
      *                     ),
-     *                     @OA\Property(property="district", type="object",
-     *                         @OA\Property(property="id", type="integer", example=1),
-     *                         @OA\Property(property="name", type="string", example="Алатауский")
+     *                     @OA\Property(property="status", type="string", enum={"pending", "in_progress", "done", "declined", "in_review"}, example="in_review"),
+     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-04-17 09:41:09"),
+     *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-04-18 20:13:08"),
+     *                     @OA\Property(property="photos", type="array", @OA\Items(type="string")),
+     *                     @OA\Property(property="likes", type="object",
+     *                         @OA\Property(property="liked_by_user", type="boolean", example=false),
+     *                         @OA\Property(property="count", type="integer", example=0)
      *                     ),
-     *                     @OA\Property(property="status", type="string", enum={"pending", "in_progress", "done", "declined"}, example="pending"),
-     *                     @OA\Property(property="created_at", type="string", format="date-time", example="2025-04-17T09:14:54.000000Z"),
-     *                     @OA\Property(property="updated_at", type="string", format="date-time", example="2025-04-17T09:14:54.000000Z"),
-     *                     @OA\Property(property="photo_urls", type="array",
-     *                         @OA\Items(type="string", example="https://s3.fr-par.scw.cloud/diploma-bucket/problems/User_1/problem_31/a7HJRy3SJpAySlBz5buSU78lsB4phc0dpfu9IjiC.jpg")
-     *                     ),
-     *                     @OA\Property(property="liked_by_user", type="boolean", example=true),
-     *                     @OA\Property(property="likes_count", type="integer", example=0),
      *                     @OA\Property(property="comments_count", type="integer", example=0),
      *                     @OA\Property(property="user", type="object",
-     *                         @OA\Property(property="name", type="string", example="IS25"),
-     *                         @OA\Property(property="surname", type="string", nullable=true, example=null),
+     *                         @OA\Property(property="name", type="string", example="Ainala"),
+     *                         @OA\Property(property="surname", type="string", example="Admin"),
      *                         @OA\Property(property="email", type="string", example="210103203@stu.sdu.edu.kz"),
-     *                         @OA\Property(property="photo_url", type="string", nullable=true, example=null)
+     *                         @OA\Property(property="avatar", type="string", example="https://s3.fr-par.scw.cloud/diploma-bucket/Avatar/User_18/RdbxG7UqwvhWfE2sJrvQo9rYDCDPhfrRYxXo7W7g.png")
+     *                     ),
+     *                     @OA\Property(property="report", type="object",
+     *                         @OA\Property(property="description", type="string", nullable=true, example=null),
+     *                         @OA\Property(property="assigned_at", type="string", format="date-time", example="2025-04-18 20:12:44"),
+     *                         @OA\Property(property="submitted_at", type="string", format="date-time", example="2025-04-18 20:13:07"),
+     *                         @OA\Property(property="confirmed_at", type="string", nullable=true, example=null),
+     *                         @OA\Property(property="moderator", type="object",
+     *                             @OA\Property(property="id", type="integer", example=4),
+     *                             @OA\Property(property="name", type="string", example="Moderator"),
+     *                             @OA\Property(property="surname", type="string", example="Da"),
+     *                             @OA\Property(property="email", type="string", example="a@mail.ru"),
+     *                             @OA\Property(property="avatar", type="string", example="https://s3.fr-par.scw.cloud/diploma-bucket/Avatar/User_4/brJ7RT5UaU3LZN1hz2EvtwrmzUjRgW0RJItoyLys.jpg")
+     *                         ),
+     *                         @OA\Property(property="photos", type="array", @OA\Items(type="string", example="https://s3.fr-par.scw.cloud/diploma-bucket/problems_solution/Moderator_4/problem_44/HmZv2KMbmUiR4GlV3tlDGvEg0Ecx5Cpjq3yyO5Wv.jpg"))
      *                     )
      *                 )
      *             ),
      *             @OA\Property(property="links", type="object",
-     *                 @OA\Property(property="first", type="string", example="http://localhost:8000/api/problems?page=1"),
-     *                 @OA\Property(property="last", type="string", example="http://localhost:8000/api/problems?page=5"),
+     *                 @OA\Property(property="first", type="string", example="http://localhost:8000?page=1"),
+     *                 @OA\Property(property="last", type="string", example="http://localhost:8000?page=1"),
      *                 @OA\Property(property="prev", type="string", nullable=true, example=null),
-     *                 @OA\Property(property="next", type="string", nullable=true, example="http://localhost:8000/api/problems?page=2")
+     *                 @OA\Property(property="next", type="string", nullable=true, example=null)
      *             ),
      *             @OA\Property(property="meta", type="object",
      *                 @OA\Property(property="current_page", type="integer", example=1),
      *                 @OA\Property(property="from", type="integer", example=1),
-     *                 @OA\Property(property="last_page", type="integer", example=5),
+     *                 @OA\Property(property="last_page", type="integer", example=1),
      *                 @OA\Property(property="per_page", type="integer", example=10),
-     *                 @OA\Property(property="to", type="integer", example=10),
-     *                 @OA\Property(property="total", type="integer", example=50)
+     *                 @OA\Property(property="to", type="integer", example=2),
+     *                 @OA\Property(property="total", type="integer", example=2)
      *             )
      *         )
      *     )
@@ -145,10 +168,9 @@ class ProblemController extends Controller
      */
 
 
+
     public function index(ProblemIndexRequest $request): AnonymousResourceCollection
     {
-
-        $columns = DB::getSchemaBuilder()->getColumnListing('problems');
         $query = Problem::with([
             'photos:problem_id,photo_url',
             'category:id,name',
@@ -156,11 +178,16 @@ class ProblemController extends Controller
             'district:id,name',
             'user:id,name,surname,email,photo_url'
         ])
-            ->select($columns)
+            ->select(['problem_id', 'user_id', 'title', 'description', 'category_id', 'city_id', 'district_id', 'address', 'location_lat', 'location_lng', 'status', 'created_at', 'updated_at'])
             ->filter($request)
             ->orderBy('created_at', $request->input('sort', 'desc'));
 
-        return ProblemResource::collection($query->paginate(10));
+        $cacheKey = 'problem_index_'.$request->input('page');
+        $query = Cache::remember($cacheKey, 60, function () use ($query) {
+            return $query->paginate(10);
+        });
+
+        return ProblemResource::collection($query);
     }
 
 
@@ -293,7 +320,7 @@ class ProblemController extends Controller
      *     )
      * )
      */
-    public function show(Problem $problem): ProblemResource
+    public function show(Problem $problem): ProblemShowResource
     {
         $problem->load([
             'photos:problem_id,photo_url',
@@ -305,7 +332,7 @@ class ProblemController extends Controller
             'report.moderator:id,name,surname,email,photo_url'
         ]);
 
-        return new ProblemResource($problem);
+        return new ProblemShowResource($problem);
     }
 
     /**
