@@ -185,15 +185,17 @@ class UserProblemController extends Controller
     {
         $query = Problem::with('photos:problem_id,photo_url')
             ->select(['problem_id', 'user_id', 'title', 'description', 'category_id', 'status', 'location_lat', 'location_lng', 'created_at'])
-            ->filter($request)
+            ->filter($request, true)
             ->where('user_id', auth()->id());
 
         $statusCounts = Problem::where('user_id', auth()->id())
             ->selectRaw('
                     count(*) as all_problems_count,
-                    sum(CASE WHEN status = \'done\' THEN 1 ELSE 0 END) as done_problems_count,
+                    sum(CASE WHEN status = \'pending\' THEN 1 ELSE 0 END) as pending_problems_count,
                     sum(CASE WHEN status = \'in_progress\' THEN 1 ELSE 0 END) as in_progress_problems_count,
-                    sum(CASE WHEN status = \'in_review\' THEN 1 ELSE 0 END) as in_review_problems_count
+                    sum(CASE WHEN status = \'in_review\' THEN 1 ELSE 0 END) as in_review_problems_count,
+                    sum(CASE WHEN status = \'done\' THEN 1 ELSE 0 END) as done_problems_count,
+                    sum(CASE WHEN status = \'declined\' THEN 1 ELSE 0 END) as declined_problems_count
                 ')
             ->first();
 
@@ -205,15 +207,16 @@ class UserProblemController extends Controller
 
         $problems = $query->orderBy('created_at', $sortOrder)->paginate(10);
 
-        // Добавляем в метаданные количество проблем по статусам
         $problems->appends($request->all());
 
         return ProblemResource::collection($problems)->additional([
             'meta' => [
                 'all_problems_count' => $statusCounts->all_problems_count,
-                'done_problems_count' => $statusCounts->done_problems_count,
+                'pending_problems_count' => $statusCounts->pending_problems_count,
                 'in_progress_problems_count' => $statusCounts->in_progress_problems_count,
                 'in_review_problems_count' => $statusCounts->in_review_problems_count,
+                'done_problems_count' => $statusCounts->done_problems_count,
+                'declined_problems_count' => $statusCounts->declined_problems_count,
             ]
         ]);
     }
