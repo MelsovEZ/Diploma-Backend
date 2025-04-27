@@ -78,7 +78,7 @@ class RegisterController extends Controller
             'code' => $verificationCode
         ];
 
-        Cache::put('register_' . $request->email, $data, now()->addMinutes(10));
+        Cache::forever('register_' . $request->email, $data);
 
         Mail::send('auth.verify-code', [
             'code' => $verificationCode,
