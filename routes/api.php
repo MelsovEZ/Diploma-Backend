@@ -22,15 +22,6 @@ Log::info('Incoming request', [
     'body' => request()->all(),
 ]);
 */
-/*
-Route::get('/verify', function () {
-    $logo = asset('images/logo.png'); // Публичный URL
-    return view('auth.verify-code', [
-        'code' => '123356',
-        'logo' => $logo
-    ]);
-});
-*/
 
 Route::post('/register', [RegisterController::class, 'register']);
 Route::post('/verify-email', [RegisterController::class, 'verifyEmail']);
@@ -45,17 +36,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
     Route::get('/user/problems', [UserProblemController::class, 'getUserProblems']);
 });
-
-Route::get('/test-mail', function () {
-    Mail::raw('Ваш код 655595', function ($message) {
-        $message->from(env('MAIL_FROM_ADDRESS'), env('MAIL_FROM_NAME'))
-            ->to('210103203@stu.sdu.edu.kz')
-            ->subject('Верификация');
-    });
-
-    return response()->json(['message' => 'Письмо отправлено!']);
-});
-
 
 Route::get('/problems', [ProblemController::class, 'index']);
 Route::get('/problems/{problem}', [ProblemController::class, 'show']);
