@@ -35,4 +35,9 @@ return [
         ],
     ],
 
+    'gis' => [
+        'api_key' => env('GIS_API_KEY'),
+    ],
+
+
 ];

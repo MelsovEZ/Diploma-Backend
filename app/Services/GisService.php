@@ -14,17 +14,19 @@ class GisService
      */
     public function getCoordinatesFromAddress($address, $cityId, $districtId): ?array
     {
-        $apiKey = env('GIS_API_KEY');
+        $apiKey = config('services.gis.api_key');
+
 
         $city = City::find($cityId);
         $district = District::find($districtId);
 
         $fullAddress = $address . ', ' . $district->name . ', ' . $city->name . ', Казахстан';
-
         $url = 'https://catalog.api.2gis.com/3.0/items/geocode';
 
-        $response = Http::get($url, [
-            'q' => $address,
+        $http = Http::withoutVerifying();
+
+        $response = $http->get($url, [
+            'q' => $fullAddress,
             'key' => $apiKey,
             'fields' => 'items.point',
         ]);
