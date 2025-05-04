@@ -4,11 +4,13 @@ namespace App\Http\Controllers\Api;
 use App\Filters\SearchQuery;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\AuthRequest;
+use App\Http\Requests\User\ChangePasswordRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\User\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -190,6 +192,63 @@ class UserController extends Controller
         $users = $query->get();
 
         return response()->json(UserResource::collection($users));
+    }
+
+    /**
+     * @OA\Post(
+     *     path="/api/user/change-password",
+     *     summary="Смена пароля пользователя",
+     *     tags={"User"},
+     *     security={{"sanctum":{}}},
+     *     @OA\RequestBody(
+     *         required=true,
+     *         description="Укажите старый и новый пароль",
+     *         @OA\JsonContent(
+     *             required={"old_password", "new_password", "new_password_confirmation"},
+     *             @OA\Property(property="old_password", type="string", example="oldpassword123", description="Старый пароль"),
+     *             @OA\Property(property="new_password", type="string", example="newpassword456", description="Новый пароль"),
+     *             @OA\Property(property="new_password_confirmation", type="string", example="newpassword456", description="Подтверждение нового пароля")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=200,
+     *         description="Пароль успешно обновлён",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Пароль успешно обновлён")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=400,
+     *         description="Старый пароль неверный",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Старый пароль неверный")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=422,
+     *         description="Ошибка валидации",
+     *         @OA\JsonContent(
+     *             @OA\Property(property="message", type="string", example="Предоставленные данные недействительны.")
+     *         )
+     *     ),
+     *     @OA\Response(
+     *         response=401,
+     *         description="Пользователь не авторизован"
+     *     )
+     * )
+     */
+    public function changePassword(ChangePasswordRequest $request): JsonResponse
+    {
+        $user = auth()->user();
+
+        if (!Hash::check($request->old_password, $user->password)) {
+            return response()->json(['message' => 'Старый пароль неверный'], 400);
+        }
+
+        $user->password = Hash::make($request->new_password);
+        $user->save();
+
+        return response()->json(['message' => 'Пароль успешно обновлён']);
     }
 
 }
