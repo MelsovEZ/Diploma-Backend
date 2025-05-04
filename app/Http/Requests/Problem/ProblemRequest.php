@@ -21,7 +21,7 @@ class ProblemRequest extends FormRequest
             'district_id' => 'required|exists:districts,id',
             'address' => 'required|string|max:255',
             'photos' => 'nullable|array|max:5',
-            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+            'photos.*' => 'image|mimes:jpeg,png,jpg,gif,svg',
         ];
     }
     public function messages(): array
