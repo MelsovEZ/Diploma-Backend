@@ -10,9 +10,6 @@ RUN apt-get update && apt-get install -y \
     curl \
     libpq-dev \
     ca-certificates \
-    --no-install-recommends \
-    && pecl install imagick \
-    && docker-php-ext-enable imagick \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install gd pdo pdo_mysql pdo_pgsql \
     && update-ca-certificates
@@ -24,6 +21,8 @@ WORKDIR /var/www/html
 COPY . .
 
 RUN composer require league/flysystem-aws-s3-v3
+
+RUN composer require intervention/image
 
 RUN composer install --no-dev --optimize-autoloader
 
