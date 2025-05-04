@@ -8,6 +8,7 @@ use App\Models\Problem\ProblemPhoto;
 use App\Models\Problem\ProblemReport;
 use App\Models\Problem\ProblemReportPhoto;
 use App\Models\User;
+use App\Services\ImageCompressor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
@@ -16,6 +17,12 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminController extends Controller
 {
+    protected $compressor;
+
+    public function __construct(ImageCompressor $compressor)
+    {
+        $this->compressor = $compressor;
+    }
     /**
      * @OA\Post(
      *     path="/api/users/{id}/make-moderator",
@@ -365,19 +372,21 @@ class AdminController extends Controller
         ]);
 
         $photoUrls = [];
-        // Если есть новые фотографии, удаляем старые и добавляем новые
         if ($request->hasFile('photos')) {
-            // Удаляем старые фотографии
             $this->deleteProblemReportPhotos($problemReport);
 
-            // Добавляем новые фотографии
             foreach ($request->file('photos') as $photo) {
                 if ($photo->isValid()) {
+                    $compressedImage = $this->compressor->compress($photo);
+
+                    $tempFile = tempnam(sys_get_temp_dir(), 'compressed_');
+                    file_put_contents($tempFile, $compressedImage);
+
                     $userId = auth()->id();
                     $problemId = $problem->problem_id;
 
-                    // Загрузка фото в Scaleway (или другой диск)
-                    $path = Storage::disk('s3')->put("problems_solution/Moderator_{$userId}/problem_{$problemId}", $photo, 'public');
+                    $path = Storage::disk('s3')->putFile("problems_solution/Moderator_{$userId}/problem_{$problemId}", new \Illuminate\Http\File($tempFile));
+                    Storage::disk('s3')->setVisibility($path, 'public');
                     $photoUrl = Storage::disk('s3')->url($path);
 
                     // Сохраняем ссылку на фото в таблицу problem_report_photos
@@ -386,6 +395,7 @@ class AdminController extends Controller
                         'photo_url' => $photoUrl,
                     ]);
                     $photoUrls[] = $photoUrl;
+                    unlink($tempFile);
                 }
             }
         } else {

@@ -26,7 +26,7 @@ class UpdateUserRequest extends FormRequest
         return [
             'name' => 'sometimes|nullable|string|max:255|regex:/^[^\s]+$/',
             'surname' => 'sometimes|nullable|string|max:255|regex:/^[^\s]+$/',
-            'photo' => 'sometimes|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'photo' => 'sometimes|image|mimes:jpeg,png,jpg,gif',
         ];
     }
     /**

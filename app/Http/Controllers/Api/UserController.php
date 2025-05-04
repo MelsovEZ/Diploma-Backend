@@ -8,6 +8,7 @@ use App\Http\Requests\User\ChangePasswordRequest;
 use App\Http\Requests\User\UpdateUserRequest;
 use App\Http\Resources\User\UserResource;
 use App\Models\User;
+use App\Services\ImageCompressor;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -16,6 +17,13 @@ use Illuminate\Support\Facades\Storage;
 
 class UserController extends Controller
 {
+    protected $compressor;
+
+    public function __construct(ImageCompressor $compressor)
+    {
+        $this->compressor = $compressor;
+    }
+
     /**
      * @OA\Get(
      *     path="/api/user",
@@ -98,7 +106,15 @@ class UserController extends Controller
             }
 
             $photo = $request->file('photo');
-            $path = Storage::disk('s3')->put("Avatar/User_{$user->id}", $photo, 'public');
+
+            $compressedImage = $this->compressor->compress($photo);
+
+            $tempFile = tempnam(sys_get_temp_dir(), 'compressed_');
+            file_put_contents($tempFile, $compressedImage);
+
+            $path = Storage::disk('s3')->putFile("Avatar/User_{$user->id}", new \Illuminate\Http\File($tempFile));
+
+            Storage::disk('s3')->setVisibility($path, 'public');
             $photoUrl = Storage::disk('s3')->url($path);
 
             $user->update([
@@ -106,6 +122,8 @@ class UserController extends Controller
                 'surname' => $request->surname ?? $user->surname,
                 'photo_url' => $photoUrl,
             ]);
+
+            unlink($tempFile);
         } else {
             $user->update([
                 'name' => $request->name ?? $user->name,
