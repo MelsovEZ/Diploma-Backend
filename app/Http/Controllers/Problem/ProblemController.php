@@ -13,6 +13,7 @@ use App\Models\District\District;
 use App\Models\Problem\Problem;
 use App\Models\Problem\ProblemPhoto;
 use App\Services\GisService;
+use App\Services\ImageCompressor;
 use Illuminate\Http\Client\ConnectionException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -27,12 +28,15 @@ use Illuminate\Support\Facades\Storage;
  */
 class ProblemController extends Controller
 {
-    protected GisService $gisService;
+    protected $gisService;
+    protected $compressor;
 
-    public function __construct(GisService $gisService)
+    public function __construct(GisService $gisService, ImageCompressor $compressor)
     {
         $this->gisService = $gisService;
+        $this->compressor = $compressor;
     }
+
     /**
      * @OA\Get(
      *     path="/problems",
@@ -282,9 +286,15 @@ class ProblemController extends Controller
         if ($request->hasFile('photos')) {
             foreach ($request->file('photos') as $photo) {
                 if ($photo->isValid()) {
+                    $compressedImage = $this->compressor->compress($photo);
+
+                    $tempFile = tempnam(sys_get_temp_dir(), 'compressed_');
+                    file_put_contents($tempFile, $compressedImage);
+
                     $userId = auth()->id();
                     $problemId = $problem->problem_id;
-                    $path = $photo->store("problems/User_{$userId}/problem_{$problemId}", 's3');
+
+                    $path = Storage::disk('s3')->putFile("problems/User_{$userId}/problem_{$problemId}", new \Illuminate\Http\File($tempFile));
                     Storage::disk('s3')->setVisibility($path, 'public');
                     $photoUrl = Storage::disk('s3')->url($path);
 
@@ -292,9 +302,12 @@ class ProblemController extends Controller
                         'problem_id' => $problem->problem_id,
                         'photo_url' => $photoUrl,
                     ]);
+
+                    unlink($tempFile);
                 }
             }
         }
+
 
         return response()->json([
             'status' => true,
