@@ -186,7 +186,17 @@ class ProblemController extends Controller
             ->filter($request)
             ->orderBy('created_at', $request->input('sort', 'desc'));
 
-        $cacheKey = 'problem_index_'.$request->input('page');
+        $filters = [
+            'page' => $request->input('page'),
+            'status' => $request->input('status'),
+            'category_id' => $request->input('category_id'),
+            'from_date' => $request->input('from_date'),
+            'to_date' => $request->input('to_date'),
+            'sort' => $request->input('sort', 'desc'),
+        ];
+
+        $cacheKey = 'problem_index_' . md5(json_encode($filters));
+
         $query = Cache::remember($cacheKey, 60, function () use ($query) {
             return $query->paginate(10);
         });
