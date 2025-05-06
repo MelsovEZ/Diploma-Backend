@@ -477,24 +477,21 @@ class AdminController extends Controller
 
     public function reviewProblem($problem_id, Request $request): JsonResponse
     {
-        // Находим проблему по ID
         $problem = Problem::find($problem_id);
         if (!$problem) {
             return response()->json(['error' => 'Problem not found'], 404);
         }
 
-        // Проверяем, что пользователь админ
         $admin = auth()->user();
         if (!$admin || $admin->status !== 'admin') {
             return response()->json(['error' => 'Неавторизованный доступ, только администраторы могут проверять проблемы'], 403);
         }
 
-        if (!in_array($problem->status, ['in_review', 'done', 'declined'])) {
+        if (!in_array($problem->status, ['in_progress', 'in_review', 'done', 'declined'])) {
             return response()->json(['error' => 'Статус проблемы не позволяет ее редактировать'], 400);
         }
 
 
-        // Обновляем статус проблемы и добавляем комментарий
         $status = $request->input('status');
         $comment = $request->input('comment');
 

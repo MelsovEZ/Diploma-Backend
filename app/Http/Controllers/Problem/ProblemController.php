@@ -464,6 +464,45 @@ class ProblemController extends Controller
         return response()->json(['message' => 'Problem deleted successfully']);
     }
 
+    /**
+     * @OA\Get(
+     *     path="/moderator/problems",
+     *     summary="Get problems assigned to the current moderator",
+     *     tags={"Problems"},
+     *     security={{"sanctum":{}}},
+     *     @OA\Response(
+     *         response=200,
+     *         description="List of problems assigned to the moderator",
+     *         @OA\JsonContent(
+     *             type="array",
+     *             @OA\Items(
+     *                 type="object",
+     *                 @OA\Property(property="problem_id", type="integer", example=12),
+     *                 @OA\Property(property="title", type="string", example="Overflowing trash bin"),
+     *                 @OA\Property(property="description", type="string", example="There is a full trash bin near the park."),
+     *                 @OA\Property(property="status", type="string", example="in_progress"),
+     *                 @OA\Property(property="category_id", type="integer", example=3),
+     *                 @OA\Property(property="moderator_id", type="integer", example=7),
+     *                 @OA\Property(property="created_date", type="string", format="date-time", example="2025-05-01T12:30:00Z")
+     *             )
+     *         )
+     *     ),
+     *     @OA\Response(response=403, description="Access denied")
+     * )
+     */
+    public function problemsForModerator(Request $request): JsonResponse|AnonymousResourceCollection
+    {
+        $user = $request->user();
+
+        if ($user->status !== 'moderator') {
+            return response()->json(['message' => 'Access denied'], 403);
+        }
+
+        $problems = Problem::where('moderator_id', $user->id)->get();
+
+        return ProblemResource::collection($problems);
+    }
+
     public function deleteProblemPhotos(Problem $problem): void
     {
         $photos = ProblemPhoto::where('problem_id', $problem->problem_id)->get();
@@ -476,6 +515,4 @@ class ProblemController extends Controller
             $photo->delete();
         }
     }
-
-
 }

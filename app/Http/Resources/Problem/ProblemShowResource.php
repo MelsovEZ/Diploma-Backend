@@ -53,7 +53,7 @@ class ProblemShowResource extends JsonResource
 
 
 
-        if (in_array($this->status, ['in_review', 'done', 'declined']) && $this->report) {
+        if (in_array($this->status, ['in_progress', 'in_review', 'done', 'declined']) && $this->report) {
             $data['report'] = [
                 'description' => $this->report->description,
                 'assigned_at' => Carbon::make($this->report->assigned_at)?->format('Y-m-d H:i:s'),

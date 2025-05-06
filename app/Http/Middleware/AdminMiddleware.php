@@ -36,6 +36,7 @@ class AdminMiddleware
         return $request->is('api/problems/*/report') ||
             $request->is('api/problems/*/resolve') ||
             $request->is('api/problems/*/submit-resolution') ||
-            $request->is('api/problems/*/report/update');
+            $request->is('api/problems/*/report/update') ||
+            $request->is('api/moderator/problems');
     }
 }
