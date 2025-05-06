@@ -478,18 +478,64 @@ class ProblemController extends Controller
      *             @OA\Items(
      *                 type="object",
      *                 @OA\Property(property="problem_id", type="integer", example=12),
-     *                 @OA\Property(property="title", type="string", example="Overflowing trash bin"),
-     *                 @OA\Property(property="description", type="string", example="There is a full trash bin near the park."),
+     *                 @OA\Property(property="user_id", type="integer", example=5),
+     *                 @OA\Property(
+     *                     property="title",
+     *                     type="string",
+     *                     example="Overflowing trash bin"
+     *                 ),
+     *                 @OA\Property(
+     *                     property="description",
+     *                     type="string",
+     *                     example="There is a full trash bin near the park."
+     *                 ),
+     *                 @OA\Property(
+     *                     property="category",
+     *                     type="object",
+     *                     @OA\Property(property="id", type="integer", example=3),
+     *                     @OA\Property(property="name", type="string", example="Environment")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="location",
+     *                     type="object",
+     *                     @OA\Property(
+     *                         property="city",
+     *                         type="object",
+     *                         @OA\Property(property="id", type="integer", example=1),
+     *                         @OA\Property(property="name", type="string", example="Almaty")
+     *                     ),
+     *                     @OA\Property(property="address", type="string", example="Abay st. 12")
+     *                 ),
      *                 @OA\Property(property="status", type="string", example="in_progress"),
-     *                 @OA\Property(property="category_id", type="integer", example=3),
-     *                 @OA\Property(property="moderator_id", type="integer", example=7),
-     *                 @OA\Property(property="created_date", type="string", format="date-time", example="2025-05-01T12:30:00Z")
+     *                 @OA\Property(property="created_at", type="string", format="date-time", example="2025-05-01 12:30:00"),
+     *                 @OA\Property(property="updated_at", type="string", format="date-time", example="2025-05-02 09:20:00"),
+     *                 @OA\Property(
+     *                     property="photos",
+     *                     type="array",
+     *                     @OA\Items(type="string", example="https://example.com/photos/photo1.jpg")
+     *                 ),
+     *                 @OA\Property(
+     *                     property="likes",
+     *                     type="object",
+     *                     @OA\Property(property="liked_by_user", type="boolean", example=true),
+     *                     @OA\Property(property="count", type="integer", example=7)
+     *                 ),
+     *                 @OA\Property(property="comments_count", type="integer", example=3),
+     *                 @OA\Property(
+     *                     property="user",
+     *                     type="object",
+     *                     @OA\Property(property="name", type="string", example="Askar"),
+     *                     @OA\Property(property="surname", type="string", example="Tulegenov"),
+     *                     @OA\Property(property="email", type="string", example="askar@example.com"),
+     *                     @OA\Property(property="avatar", type="string", example="https://example.com/avatars/avatar.jpg")
+     *                 )
      *             )
      *         )
      *     ),
      *     @OA\Response(response=403, description="Access denied")
      * )
      */
+
     public function problemsForModerator(Request $request): JsonResponse|AnonymousResourceCollection
     {
         $user = $request->user();

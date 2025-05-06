@@ -487,7 +487,7 @@ class AdminController extends Controller
             return response()->json(['error' => 'Неавторизованный доступ, только администраторы могут проверять проблемы'], 403);
         }
 
-        if (!in_array($problem->status, ['in_progress', 'in_review', 'done', 'declined'])) {
+        if (!in_array($problem->status, ['pending', 'in_progress', 'in_review', 'done', 'declined'])) {
             return response()->json(['error' => 'Статус проблемы не позволяет ее редактировать'], 400);
         }
 
