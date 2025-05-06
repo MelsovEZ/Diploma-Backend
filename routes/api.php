@@ -54,6 +54,7 @@ Route::middleware(['auth:sanctum', 'admin'])->group(function () {
     Route::post('/problems/{problem_id}/assign-moderator/{moderator_id}', [AdminController::class, 'assignModeratorToProblem']);
     Route::post('/problems/{problem_id}/report', [AdminController::class, 'submitProblemReport']);
     Route::post('/problems/{problem_id}/report/update', [AdminController::class, 'updateProblemReport']);
+    Route::get('/moderator/problems', [ProblemController::class, 'problemsForModerator']);
 
     Route::post('/problems/{problem_id}/admin-review', [AdminController::class, 'reviewProblem']);
 });
