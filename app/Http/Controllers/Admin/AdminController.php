@@ -85,6 +85,14 @@ class AdminController extends Controller
      *     @OA\Response(response=400, description="User is not a moderator")
      * )
      */
+
+
+
+
+
+
+
+
     public function removeModerator($id): JsonResponse
     {
         $user = User::find($id);
@@ -104,6 +112,12 @@ class AdminController extends Controller
         ]);
     }
 
+
+
+
+
+
+    
     /**
      * @OA\Post(
      *     path="/api/problems/{problem_id}/assign-moderator/{moderator_id}",
