@@ -20,6 +20,10 @@ class ProblemResource extends JsonResource
                 'name' => optional($this->category)->name,
             ],
             'location' => [
+                'district' => [
+                    'id' => optional($this->district)->id,
+                    'name' => optional($this->district)->name,
+                ],
                 'city' => [
                     'id' => optional($this->city)->id,
                     'name' => optional($this->city)->name,
