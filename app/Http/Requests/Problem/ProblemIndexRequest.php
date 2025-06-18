@@ -11,6 +11,7 @@ class ProblemIndexRequest extends FormRequest
         return [
             'category_id' => ['sometimes', 'array'],
             'category_id.*' => ['integer'],
+            'city_id' => ['integer'],
             'sort' => ['sometimes', 'in:asc,desc'],
             'status' => ['sometimes', 'in:pending,in_progress,in_review,declined,done'],
             'from_date' => ['sometimes', 'date'],

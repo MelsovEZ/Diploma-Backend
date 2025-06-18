@@ -85,6 +85,14 @@ class AdminController extends Controller
      *     @OA\Response(response=400, description="User is not a moderator")
      * )
      */
+
+
+
+
+
+
+
+
     public function removeModerator($id): JsonResponse
     {
         $user = User::find($id);
@@ -104,6 +112,12 @@ class AdminController extends Controller
         ]);
     }
 
+
+
+
+
+
+    
     /**
      * @OA\Post(
      *     path="/api/problems/{problem_id}/assign-moderator/{moderator_id}",
@@ -491,7 +505,7 @@ class AdminController extends Controller
             return response()->json(['error' => 'Статус проблемы не позволяет ее редактировать'], 400);
         }
 
-
+        $oldStatus = $problem->status;
         $status = $request->input('status');
         $comment = $request->input('comment');
 
@@ -500,7 +514,6 @@ class AdminController extends Controller
         if ($status && !in_array($status, ['done', 'declined', 'in_review'])) {
             return response()->json(['error' => 'Неверный статус'], 400);
         }
-
         if ($status) {
             $problem->status = $status;
             $problem->save();
@@ -526,19 +539,23 @@ class AdminController extends Controller
             }
         }
 
-
-        $currentComment = DB::table('problem_reports')
-            ->where('problem_id', $problem_id)
-            ->value('admin_comment');
-        if ($comment !== $currentComment || $comment === '') {
-            // Сохраняем пустой комментарий как null
-            $updatedComment = $comment === '' ? null : $comment;
-
-            DB::table('problem_reports')
+        if ($comment !== null) {
+            $currentComment = DB::table('problem_reports')
                 ->where('problem_id', $problem_id)
-                ->update(['admin_comment' => $updatedComment]);
+                ->value('admin_comment');
+            if ($comment !== $currentComment || $comment === '') {
+                // Сохраняем пустой комментарий как null
+                $updatedComment = $comment === '' ? null : $comment;
 
-            $responseMessage[] = 'Комментарий обновлен'; // Добавляем сообщение о комментарии
+                DB::table('problem_reports')
+                    ->where('problem_id', $problem_id)
+                    ->update(['admin_comment' => $updatedComment]);
+                DB::table('problems')
+                    ->where('problem_id', $problem_id)
+                    ->update(['admin_comment' => $updatedComment]);
+
+                $responseMessage[] = 'Комментарий обновлен'; // Добавляем сообщение о комментарии
+            }
         }
 
         if (empty($responseMessage)) {

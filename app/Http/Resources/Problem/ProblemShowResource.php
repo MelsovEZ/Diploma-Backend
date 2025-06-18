@@ -49,6 +49,7 @@ class ProblemShowResource extends JsonResource
                 'email' => optional($this->user)->email,
                 'avatar' => optional($this->user)->photo_url,
             ],
+            'admin_comment' => $this->admin_comment,
         ];
 
 

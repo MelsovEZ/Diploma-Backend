@@ -189,6 +189,7 @@ class ProblemController extends Controller
         $filters = [
             'page' => $request->input('page'),
             'status' => $request->input('status'),
+            'city_id' => $request->input('city_id'),
             'category_id' => $request->input('category_id'),
             'from_date' => $request->input('from_date'),
             'to_date' => $request->input('to_date'),
