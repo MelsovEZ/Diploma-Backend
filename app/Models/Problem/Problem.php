@@ -95,6 +95,10 @@ class Problem extends Model
             $query->where('city_id', $request->input('city_id'));
         }
 
+        if ($request->filled('district_id')) {
+            $query->where('district_id', $request->input('district_id'));
+        }
+
         if ($request->filled('from_date')) {
             $query->whereDate('created_at', '>=', $request->input('from_date'));
         }
